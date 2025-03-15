@@ -203,7 +203,7 @@ int main(int argc, char** argv)
 
 	cout << zagolovok << endl;
 	cout << "[+] =====================================================" << endl;
-	cout << "[+] KEYHUNT-CUDA v"<<RELEASE<<"                  15.03.25" << endl;
+	cout << "[+] KEYHUNT-CUDA v"<<RELEASE<<"                         15.03.2025" << endl;
 	cout << "[+] =====================================================\n" << endl;
 	cout << grey;
 

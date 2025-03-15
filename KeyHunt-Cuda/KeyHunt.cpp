@@ -264,9 +264,6 @@ void KeyHunt::output(std::string addr, std::string pAddr, std::string pAddrHex, 
 	fprintf(f, "Priv (HEX): %s\n", pAddrHex.c_str());
 	fprintf(stdout, "Priv (HEX): %s\n", pAddrHex.c_str());
 
-	fprintf(f, "PubK (HEX): %s\n", pubKey.c_str());
-	fprintf(stdout, "PubK (HEX): %s\n", pubKey.c_str());
-
 	fprintf(f, "=================================================================================\n");
 	fprintf(stdout, "=================================================================================\n");
 
@@ -1155,8 +1152,6 @@ void KeyHunt::Search(int nbThread, std::vector<int> gpuId, std::vector<int> grid
 #endif
 	}
 
-	printf("%ld", &rangeStart);
-
 #ifndef WIN64
 	setvbuf(stdout, NULL, _IONBF, 0);
 #endif
@@ -1394,22 +1389,6 @@ char* KeyHunt::toTimeStr(int sec, char* timeStr)
 }
 
 // ----------------------------------------------------------------------------
-
-//#include <gmp.h>
-//#include <gmpxx.h>
-// ((input - min) * 100) / (max - min)
-//double KeyHunt::GetPercantage(uint64_t v)
-//{
-//	//Int val(v);
-//	//mpz_class x(val.GetBase16().c_str(), 16);
-//	//mpz_class r(rangeStart.GetBase16().c_str(), 16);
-//	//x = x - mpz_class(rangeEnd.GetBase16().c_str(), 16);
-//	//x = x * 100;
-//	//mpf_class y(x);
-//	//y = y / mpf_class(r);
-//	return 0;// y.get_d();
-//}
-
 
 
 
