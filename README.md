@@ -8,7 +8,6 @@ Renamed from VanitySearch to KeyHunt (inspired from [keyhunt](https://github.com
 A lot of gratitude to all the developers whose codes has been used here.
 
 
-
 ## 15.03.2025 Изменения(Changes)
 
 -Конвертер txt->bin встроен в программу (The txt->bin converter is built into the program)
@@ -19,8 +18,6 @@ A lot of gratitude to all the developers whose codes has been used here.
    
 -Немного изменил вывод информации(не всё)
 -(Slightly changed the information output (not all))
-
-
 
 
 # Features
@@ -35,10 +32,8 @@ A lot of gratitude to all the developers whose codes has been used here.
 
 # Usage
 - For multiple addresses or xpoints, file format must be binary with sorted data.
-- To convert Bitcoin addresses list(text format) to rmd160 hashes binary file use provided python script ```addresses_to_hash160.py```
-- To convert pubkeys list(text format) to xpoints binary file use provided python script ```pubkeys_to_xpoint.py```
-- To convert Ethereum addresses list(text format) to keccak160 hashes binary file use provided python script ```eth_addresses_to_bin.py```
-- After getting binary files from python scripts, use ```BinSort``` tool provided with KeyHunt-Cuda to sort these binary files.
+- convert BTC txt->bin [KeyHunt-Cuda.exe -convertFileBTC btc.txt]
+- convert ETH txt->bin [KeyHunt-Cuda.exe -convertFileETH eth.txt]
 - Don't use XPoint[s] mode with ```uncompressed``` compression type.
 - CPU and GPU can not be used together, because the program divides the whole input range into equal parts for all the threads, so use either CPU or GPU so that the whole range can increment by all the threads with consistency.
 - Minimum entries for bloom filter is >= 2.
