@@ -13,7 +13,7 @@
 Bloom::Bloom(unsigned long long entries, double error) : _ready(0)
 {
     if (entries < 2 || error <= 0 || error >= 1) {
-        printf("Bloom init error, minimum 2 entries required\n");
+        printf("[E] Bloom init error, minimum 2 entries required\n");
         return;
     }
 
@@ -38,7 +38,7 @@ Bloom::Bloom(unsigned long long entries, double error) : _ready(0)
 
     _bf = (unsigned char *)calloc((unsigned long long int)_bytes, sizeof(unsigned char));
     if (_bf == NULL) {                                   // LCOV_EXCL_START
-        printf("Bloom init error\n");
+        printf("[E] Bloom init error\n");
         return;
     }                                                          // LCOV_EXCL_STOP
 
@@ -68,21 +68,14 @@ int Bloom::add(const void *buffer, int len)
 
 void Bloom::print()
 {
-    printf("Bloom at %p\n", (void *)this);
     if (!_ready) {
-        printf(" *** NOT READY ***\n");
+        printf("[E] Bloom *** NOT READY ***\n");
     }
-    printf("  Version    : %d.%d\n", _major, _minor);
-    printf("  Entries    : %llu\n", _entries);
-    printf("  Error      : %1.10f\n", _error);
-    printf("  Bits       : %llu\n", _bits);
-    printf("  Bits/Elem  : %f\n", _bpe);
-    printf("  Bytes      : %llu", _bytes);
+    printf("[+] Bloom Bytes  : %llu", _bytes);
     unsigned int KB = _bytes / 1024;
     unsigned int MB = KB / 1024;
-    //printf(" (%u KB, %u MB)\n", KB, MB);
     printf(" (%u MB)\n", MB);
-    printf("  Hash funcs : %d\n", _hashes);
+    printf("[+] Bloom hash   : %d\n", _hashes);
 }
 
 

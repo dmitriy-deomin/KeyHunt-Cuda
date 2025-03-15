@@ -51,7 +51,7 @@ KeyHunt::KeyHunt(const std::string& inputFile, int compMode, int searchMode, int
 
 	wfd = fopen(this->inputFile.c_str(), "rb");
 	if (!wfd) {
-		printf("%s can not open\n", this->inputFile.c_str());
+		printf("[E] %s can not open\n", this->inputFile.c_str());
 		exit(1);
 	}
 
@@ -77,22 +77,27 @@ KeyHunt::KeyHunt(const std::string& inputFile, int compMode, int searchMode, int
 
 	bloom = new Bloom(2 * N, 0.000001);
 
-	uint64_t percent = (N - 1) / 100;
 	uint64_t i = 0;
 	printf("\n");
+	uint64_t nr = 0;
 	while (i < N && !should_exit) {
 		memset(buf, 0, K_LENGTH);
-		memset(DATA + (i * K_LENGTH), 0, K_LENGTH);
+
 		if (fread(buf, 1, K_LENGTH, wfd) == K_LENGTH) {
 			bloom->add(buf, K_LENGTH);
-			memcpy(DATA + (i * K_LENGTH), buf, K_LENGTH);
-			if ((percent != 0) && i % percent == 0) {
-				printf("\rLoading      : %llu %%", (i / percent));
+			memcpy(DATA + (nr * K_LENGTH), buf, K_LENGTH); // »спользуем nr вместо i
+
+			nr++; // »нкрементируем после успешного чтени€
+
+			// ¬ывод обновл€емого прогресса каждые 1 000 000 строк
+			if (nr % 1000000 == 0 || nr == N) {
+				printf("\r[+] Loading      : %d/%d", nr, N);
 				fflush(stdout);
 			}
 		}
-		i++;
+		i++; // ќставл€ем дл€ контрол€ цикла, но теперь nr точнее отслеживает успешные записи
 	}
+
 	fclose(wfd);
 	free(buf);
 
@@ -107,14 +112,16 @@ KeyHunt::KeyHunt(const std::string& inputFile, int compMode, int searchMode, int
 	BLOOM_N = bloom->get_bytes();
 	TOTAL_COUNT = N;
 	targetCounter = i;
+	printf("\n"); // ѕеревод строки после завершени€ работы
+
 	if (coinType == COIN_BTC) {
 		if (searchMode == (int)SEARCH_MODE_MA)
-			printf("Loaded       : %s Bitcoin addresses\n", formatThousands(i).c_str());
+			printf("[+] Loaded       : %s Bitcoin addresses\n", formatThousands(i).c_str());
 		else if (searchMode == (int)SEARCH_MODE_MX)
-			printf("Loaded       : %s Bitcoin xpoints\n", formatThousands(i).c_str());
+			printf("[+] Loaded       : %s Bitcoin xpoints\n", formatThousands(i).c_str());
 	}
 	else {
-		printf("Loaded       : %s Ethereum addresses\n", formatThousands(i).c_str());
+		printf("[+] Loaded       : %s Ethereum addresses\n", formatThousands(i).c_str());
 	}
 
 	printf("\n");
@@ -186,14 +193,14 @@ void KeyHunt::InitGenratorTable()
 	char* ctimeBuff;
 	time_t now = time(NULL);
 	ctimeBuff = ctime(&now);
-	printf("Start Time   : %s", ctimeBuff);
+	printf("[+] Start Time   : %s", ctimeBuff);
 
 	if (rKey > 0) {
-		printf("Base Key     : Randomly changes on every %llu Mkeys\n", rKey);
+		printf("[+] Base Key     : Randomly changes on every %llu Mkeys\n", rKey);
 	}
-	printf("Global start : %s (%d bit)\n", this->rangeStart.GetBase16().c_str(), this->rangeStart.GetBitLength());
-	printf("Global end   : %s (%d bit)\n", this->rangeEnd.GetBase16().c_str(), this->rangeEnd.GetBitLength());
-	printf("Global range : %s (%d bit)\n", this->rangeDiff2.GetBase16().c_str(), this->rangeDiff2.GetBitLength());
+	printf("[+] Global start : %s (%d bit)\n", this->rangeStart.GetBase16().c_str(), this->rangeStart.GetBitLength());
+	printf("[+] Global end   : %s (%d bit)\n", this->rangeEnd.GetBase16().c_str(), this->rangeEnd.GetBitLength());
+	printf("[+] Global range : %s (%d bit)\n", this->rangeDiff2.GetBase16().c_str(), this->rangeDiff2.GetBitLength());
 
 }
 
@@ -231,13 +238,16 @@ void KeyHunt::output(std::string addr, std::string pAddr, std::string pAddrHex, 
 	if (outputFile.length() > 0) {
 		f = fopen(outputFile.c_str(), "a");
 		if (f == NULL) {
-			printf("Cannot open %s for writing\n", outputFile.c_str());
+			printf("[E] Cannot open %s for writing\n", outputFile.c_str());
 			f = stdout;
 		}
 		else {
 			needToClose = true;
 		}
 	}
+
+	//зеленый
+	printf("\033[32m");
 
 	if (!needToClose)
 		printf("\n");
@@ -888,7 +898,7 @@ void KeyHunt::FindKeyGPU(TH_PARAM * ph)
 			xpoint, (rKey != 0));
 		break;
 	default:
-		printf("Invalid search mode format");
+		printf("[E] Invalid search mode format");
 		return;
 		break;
 	}
@@ -899,7 +909,7 @@ void KeyHunt::FindKeyGPU(TH_PARAM * ph)
 	Int* keys = new Int[nbThread];
 	std::vector<ITEM> found;
 
-	printf("GPU          : %s\n\n", g->deviceName.c_str());
+	printf("[+] GPU          : %s\n\n", g->deviceName.c_str());
 
 	counters[thId] = 0;
 
@@ -1145,6 +1155,8 @@ void KeyHunt::Search(int nbThread, std::vector<int> gpuId, std::vector<int> grid
 #endif
 	}
 
+	printf("%ld", &rangeStart);
+
 #ifndef WIN64
 	setvbuf(stdout, NULL, _IONBF, 0);
 #endif
@@ -1220,15 +1232,15 @@ void KeyHunt::Search(int nbThread, std::vector<int> gpuId, std::vector<int> grid
 
 		if (isAlive(params)) {
 			memset(timeStr, '\0', 256);
-			printf("\r[%s] [CPU+GPU: %.2f Mk/s] [GPU: %.2f Mk/s] [C: %lf %%] [R: %llu] [T: %s (%d bit)] [F: %d]  ",
+			printf("\033[37m");
+			printf("\r[%s] [F: %d] [GPU: %.2f Mk/s] [C: %lf %%] [R: %llu] [T: %s (%d bit)]  ",
 				toTimeStr(t1, timeStr),
-				avgKeyRate / 1000000.0,
+				nbFoundKey,
 				avgGpuKeyRate / 1000000.0,
 				completedPerc,
 				rKeyCount,
 				formatThousands(count).c_str(),
-				completedBits,
-				nbFoundKey);
+				completedBits);
 		}
 		if (rKey > 0) {
 			if ((count - lastrKey) > (1000000 * rKey)) {
