@@ -7,6 +7,22 @@ Renamed from VanitySearch to KeyHunt (inspired from [keyhunt](https://github.com
 
 A lot of gratitude to all the developers whose codes has been used here.
 
+
+
+## 15.03.2025 Изменения(Changes)
+
+-Конвертер txt->bin встроен в программу (The txt->bin converter is built into the program)
+
+Использование(Used):
+   при запуске KeyHunt-Cuda.exe будут созданны два примера батников для конвертирования
+   (at startup KeyHunt-Cuda.exe two examples of batch files for conversion will be created.)
+   
+-Немного изменил вывод информации(не всё)
+-(Slightly changed the information output (not all))
+
+
+
+
 # Features
 - For Bitcoin use ```--coin BTC``` and for Ethereum use ```--coin ETH```
 - Single address(rmd160 hash) for BTC or ETH address searching with mode ```-m ADDREES```
@@ -27,26 +43,7 @@ A lot of gratitude to all the developers whose codes has been used here.
 - CPU and GPU can not be used together, because the program divides the whole input range into equal parts for all the threads, so use either CPU or GPU so that the whole range can increment by all the threads with consistency.
 - Minimum entries for bloom filter is >= 2.
 
-## addresses_to_hash160.py
-```
-python3 addresses_to_hash160.py addresses_in.txt hash160_out.bin
-```
-
-## pubkeys_to_xpoint.py
-```
-python3 pubkeys_to_xpoint.py pubkeys_in.txt xpoints_out.bin
-```
-
-## eth_addresses_to_bin.py
-```
-python3 eth_addresses_to_bin.py eth_addresses_in.txt eth_addresses_out.bin
-```
-
-## BinSort
-For hash160 and keccak160 ```length``` is ```20``` and for xpoint ```length``` is ```32```.
-```
-BinSort.exe
-Usage: BinSort.exe length in_file out_file
+##############################################################################
 ```
 
 ## KeyHunt-Cuda
