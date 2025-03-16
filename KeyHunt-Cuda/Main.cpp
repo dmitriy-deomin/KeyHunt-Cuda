@@ -112,7 +112,7 @@ int parseSearchMode(const std::string& s)
 		return SEARCH_MODE_MX;
 	}
 
-	printf("Invalid search mode format: %s", stype.c_str());
+	printf("[E] Invalid search mode format: %s", stype.c_str());
 	usage();
 	exit(-1);
 }
@@ -203,7 +203,7 @@ int main(int argc, char** argv)
 
 	cout << zagolovok << endl;
 	cout << "[+] =====================================================" << endl;
-	cout << "[+] KEYHUNT-CUDA v"<<RELEASE<<"                         15.03.2025" << endl;
+	cout << "[+] KEYHUNT-CUDA v"<<RELEASE<<"                         16.03.2025" << endl;
 	cout << "[+] =====================================================\n" << endl;
 	cout << grey;
 
@@ -675,6 +675,22 @@ int main(int argc, char** argv)
 			return -1;
 		}
 	}
+
+	//если название файла outputFile(Found.txt) не изменёно добавим в название начало(5 знаков) и конец(5 знаков) диапазона вида Found_80001_80002.txt
+	if (outputFile == "Found.txt") {
+		std::string rangeStartHex = rangeStart.GetBase16();
+		std::string rangeENDHex = rangeEnd.GetBase16();
+
+		if (rangeStartHex.length() > 5){ //Если начальное вообще больше 5 
+			rangeStartHex  = rangeStartHex.substr(0, 5);
+		}
+		if (rangeENDHex.length() > 5) { //Если конечное вообще больше 4 хз проверим )) 
+			rangeENDHex = rangeENDHex.substr(0, 5);
+		}
+
+		outputFile = "FOUND[" + rangeStartHex + "_" + rangeENDHex + "].txt";
+	}
+
 
 	// 
 	if (coinType == COIN_ETH && (searchMode == SEARCH_MODE_SX || searchMode == SEARCH_MODE_MX/* || compMode == SEARCH_COMPRESSED*/)) {

@@ -1087,6 +1087,33 @@ void KeyHunt::SetupRanges(uint32_t totalThreads)
 
 // ----------------------------------------------------------------------------
 
+
+//для отображения скорости-----------------------------------------------
+std::string formatDouble(const char* formatStr, double value)
+{
+	char buf[100] = { 0 };
+
+	sprintf(buf, formatStr, value);
+
+	return std::string(buf);
+}
+
+std::string formatSpeed(double speed) {
+	const char* units[] = { "MKey/s", "GKey/s", "TKey/s" };
+	int unitIndex = 0;
+
+	while (speed >= 1000 && unitIndex < 2) { // До TKey/s
+		speed /= 1000;
+		++unitIndex;
+	}
+
+	if (speed < 0.01) {
+		return "< 0.01 MKey/s";
+	}
+	return formatDouble("[%.3f", speed) + " " + units[unitIndex];
+}
+//---------------------------------------------------------------------
+
 void KeyHunt::Search(int nbThread, std::vector<int> gpuId, std::vector<int> gridSize, bool& should_exit)
 {
 
@@ -1226,12 +1253,14 @@ void KeyHunt::Search(int nbThread, std::vector<int> gpuId, std::vector<int> grid
 		avgGpuKeyRate /= (double)(nbSample);
 
 		if (isAlive(params)) {
+			std::string speedStr = formatSpeed(static_cast<double>(avgGpuKeyRate) / 1000000.0);
+	
 			memset(timeStr, '\0', 256);
 			printf("\033[37m");
-			printf("\r[%s] [F: %d] [GPU: %.2f Mk/s] [C: %lf %%] [R: %llu] [T: %s (%d bit)]  ",
+			printf("\r[%s] [F: %d] [GPU: %s] [C: %lf %%] [R: %llu] [T: %s (%d bit)]  ",
 				toTimeStr(t1, timeStr),
 				nbFoundKey,
-				avgGpuKeyRate / 1000000.0,
+				speedStr.c_str(),
 				completedPerc,
 				rKeyCount,
 				formatThousands(count).c_str(),
