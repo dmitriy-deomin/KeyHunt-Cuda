@@ -2,6 +2,7 @@
 #include <iostream>
 #include <math.h>
 #include <string.h>
+#include <string>
 //#include <unistd.h>
 
 #define MAKESTRING(n) STRING(n)
@@ -71,11 +72,15 @@ void Bloom::print()
     if (!_ready) {
         printf("[E] Bloom *** NOT READY ***\n");
     }
-    printf("[+] Bloom Bytes  : %llu", _bytes);
+    std::cout << "[+] Bloom Bytes  : " << "\033[37m" << _bytes;
     unsigned int KB = _bytes / 1024;
     unsigned int MB = KB / 1024;
-    printf(" (%u MB)\n", MB);
-    printf("[+] Bloom hash   : %d\n", _hashes);
+    std::string resultM = std::to_string(MB) + " MB";
+    std::string resultK = std::to_string(KB) + " KB";
+    std::cout<<"(" << (MB>0?resultM:resultK)<<")" << "\033[90m" << std::endl;
+    std::cout << "[+] Bloom hash   : " << "\033[37m";
+    printf("%d", _hashes);
+    printf("\033[90m\n");
 }
 
 

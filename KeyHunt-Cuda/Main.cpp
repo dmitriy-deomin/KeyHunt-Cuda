@@ -179,7 +179,6 @@ BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
 {
 	switch (fdwCtrlType) {
 	case CTRL_C_EVENT:
-		//printf("\n\nCtrl-C event\n\n");
 		should_exit = true;
 		return TRUE;
 
@@ -203,7 +202,7 @@ int main(int argc, char** argv)
 
 	cout << zagolovok << endl;
 	cout << "[+] =====================================================" << endl;
-	cout << "[+] KEYHUNT-CUDA v"<<RELEASE<<"                         16.03.2025" << endl;
+	cout << "[+] KEYHUNT-CUDA v"<<RELEASE<<"                         17.03.2025" << endl;
 	cout << "[+] =====================================================\n" << endl;
 	cout << grey;
 
@@ -533,7 +532,7 @@ int main(int argc, char** argv)
 	vector<int> gpuId = { 0 };
 	vector<int> gridSize;
 
-	string outputFile = "Found.txt";
+	string outputFile = "Found.txt";//по умолчанию, если пользователь не укажет изменим на вид FOUND[xxxxx_xxxxx].txt
 
 	string inputFile = "";	// for both multiple hash160s and x points
 	string address = "";	// for single address mode
@@ -833,20 +832,20 @@ int main(int argc, char** argv)
 
 
 	if (coinType == COIN_BTC)
-		printf("[+] COMP MODE    : %s\n", compMode == SEARCH_COMPRESSED ? "COMPRESSED" : (compMode == SEARCH_UNCOMPRESSED ? "UNCOMPRESSED" : "COMPRESSED & UNCOMPRESSED"));
-	printf("[+] COIN TYPE    : %s\n", coinType == COIN_BTC ? "BITCOIN" : "ETHEREUM");
-	printf("[+] SEARCH MODE  : %s\n", searchMode == (int)SEARCH_MODE_MA ? "Multi Address" : (searchMode == (int)SEARCH_MODE_SA ? "Single Address" : (searchMode == (int)SEARCH_MODE_MX ? "Multi X Points" : "Single X Point")));
-	printf("[+] DEVICE       : %s\n", (gpuEnable && nbCPUThread > 0) ? "CPU & GPU" : ((!gpuEnable && nbCPUThread > 0) ? "CPU" : "GPU"));
-	printf("[+] CPU THREAD   : %d\n", nbCPUThread);
+	cout << "[+] COMP MODE    : " << white << (compMode == SEARCH_COMPRESSED ? "COMPRESSED" : (compMode == SEARCH_UNCOMPRESSED ? "UNCOMPRESSED" : "COMPRESSED & UNCOMPRESSED")) << grey << endl;
+	cout << "[+] COIN TYPE    : " << white << (coinType == COIN_BTC ? "BITCOIN" : "ETHEREUM") << grey << endl;
+	cout << "[+] SEARCH MODE  : " << white << (searchMode == (int)SEARCH_MODE_MA ? "Multi Address" : (searchMode == (int)SEARCH_MODE_SA ? "Single Address" : (searchMode == (int)SEARCH_MODE_MX ? "Multi X Points" : "Single X Point"))) << grey << endl;
+	cout << "[+] DEVICE       : " << white << ((gpuEnable && nbCPUThread > 0) ? "CPU & GPU" : ((!gpuEnable && nbCPUThread > 0) ? "CPU" : "GPU")) << grey << endl;
+	cout << "[+] CPU THREAD   : " << white << nbCPUThread << grey << endl;
 	if (gpuEnable) {
-		printf("[+] GPU IDS      : ");
+		cout << "[+] GPU IDS      : " << white;
 		for (int i = 0; i < gpuId.size(); i++) {
 			printf("%d", gpuId.at(i));
 			if (i + 1 < gpuId.size())
 				printf(", ");
 		}
-		printf("\n");
-		printf("[+] GPU GRIDSIZE : ");
+		cout << grey << endl;
+		cout << "[+] GPU GRIDSIZE : " << white;
 		for (int i = 0; i < gridSize.size(); i++) {
 			printf("%d", gridSize.at(i));
 			if (i + 1 < gridSize.size()) {
@@ -859,27 +858,28 @@ int main(int argc, char** argv)
 
 			}
 		}
+		cout << grey;
 		if (gpuAutoGrid)
 			printf(" (Auto grid size)\n");
 		else
 			printf("\n");
 	}
-	printf("[+] SSE          : %s\n", useSSE ? "YES" : "NO");
-	printf("[+] RKEY         : %llu Mkeys\n", rKey);
-	printf("[+] MAX FOUND    : %d\n", maxFound);
+	cout << "[+] SSE          : " << white << (useSSE ? "YES" : "NO") << grey << endl;
+	cout << "[+] RKEY         : " << white << rKey<<" Mkeys"<<grey<<endl;
+	cout << "[+] MAX FOUND    : " << white << maxFound << grey << endl;
 	if (coinType == COIN_BTC) {
 		switch (searchMode) {
 		case (int)SEARCH_MODE_MA:
-			printf("[+] BTC HASH160s : %s\n", inputFile.c_str());
+			cout << "[+] BTC HASH160s : " << white << inputFile.c_str() << grey << endl;
 			break;
 		case (int)SEARCH_MODE_SA:
-			printf("[+] BTC ADDRESS  : %s\n", address.c_str());
+			cout << "[+] BTC ADDRESS  : " << white << address.c_str() << grey << endl;
 			break;
 		case (int)SEARCH_MODE_MX:
-			printf("[+] BTC XPOINTS  : %s\n", inputFile.c_str());
+			cout << "[+] BTC XPOINTS  : " << white << inputFile.c_str() << grey << endl;
 			break;
 		case (int)SEARCH_MODE_SX:
-			printf("[+] BTC XPOINT   : %s\n", xpoint.c_str());
+			cout << "[+] BTC XPOINT   : " << white << xpoint.c_str() << grey << endl;
 			break;
 		default:
 			break;
@@ -888,16 +888,16 @@ int main(int argc, char** argv)
 	else {
 		switch (searchMode) {
 		case (int)SEARCH_MODE_MA:
-			printf("[+] ETH ADDRESSES: %s\n", inputFile.c_str());
+			cout << "[+] ETH ADDRESSES: " << white << inputFile.c_str() << grey << endl;
 			break;
 		case (int)SEARCH_MODE_SA:
-			printf("[+] ETH ADDRESS  : 0x%s\n", address.c_str());
+			cout << "[+] ETH ADDRESS  : " << white << address.c_str() << grey << endl;
 			break;
 		default:
 			break;
 		}
 	}
-	printf("[+] OUTPUT FILE  : %s\n", outputFile.c_str());
+	cout << "[+] OUTPUT FILE  : " << white << outputFile.c_str() << grey << endl;
 
 
 #ifdef WIN64

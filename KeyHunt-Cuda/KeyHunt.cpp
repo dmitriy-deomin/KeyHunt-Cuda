@@ -91,7 +91,7 @@ KeyHunt::KeyHunt(const std::string& inputFile, int compMode, int searchMode, int
 
 			// Вывод обновляемого прогресса каждые 1 000 000 строк
 			if (nr % 1000000 == 0 || nr == N) {
-				printf("\r[+] Loading      : %d/%d", nr, N);
+				std::cout << "\r[+] Loading      : " << "\033[37m" << nr << "/" << N<< "\033[90m";
 				fflush(stdout);
 			}
 		}
@@ -116,12 +116,12 @@ KeyHunt::KeyHunt(const std::string& inputFile, int compMode, int searchMode, int
 
 	if (coinType == COIN_BTC) {
 		if (searchMode == (int)SEARCH_MODE_MA)
-			printf("[+] Loaded       : %s Bitcoin addresses\n", formatThousands(i).c_str());
+			std::cout << "[+] Loaded       : " << "\033[37m" << formatThousands(i).c_str() << " Bitcoin addresses" << "\033[90m\n";
 		else if (searchMode == (int)SEARCH_MODE_MX)
-			printf("[+] Loaded       : %s Bitcoin xpoints\n", formatThousands(i).c_str());
+			std::cout << "[+] Loaded       : " << "\033[37m" << formatThousands(i).c_str()<<" Bitcoin xpoints" << "\033[90m\n";
 	}
 	else {
-		printf("[+] Loaded       : %s Ethereum addresses\n", formatThousands(i).c_str());
+		std::cout << "[+] Loaded       : " << "\033[37m" << formatThousands(i).c_str()<<" Ethereum addresses" << "\033[90m\n";
 	}
 
 	printf("\n");
@@ -193,14 +193,15 @@ void KeyHunt::InitGenratorTable()
 	char* ctimeBuff;
 	time_t now = time(NULL);
 	ctimeBuff = ctime(&now);
-	printf("[+] Start Time   : %s", ctimeBuff);
+	std::cout << "[+] Start Time   : " << "\033[37m" << ctimeBuff << "\033[90m\n";
 
 	if (rKey > 0) {
-		printf("[+] Base Key     : Randomly changes on every %llu Mkeys\n", rKey);
+		std::cout << "[+] Base Key     : " << "\033[37m";
+		printf("Randomly changes on every %llu Mkeys\033[90m\n", rKey);
 	}
-	printf("[+] Global start : %s (%d bit)\n", this->rangeStart.GetBase16().c_str(), this->rangeStart.GetBitLength());
-	printf("[+] Global end   : %s (%d bit)\n", this->rangeEnd.GetBase16().c_str(), this->rangeEnd.GetBitLength());
-	printf("[+] Global range : %s (%d bit)\n", this->rangeDiff2.GetBase16().c_str(), this->rangeDiff2.GetBitLength());
+	printf("[+] Global start : \033[37m%s (%d bit)\033[90m\n", this->rangeStart.GetBase16().c_str(), this->rangeStart.GetBitLength());
+	printf("[+] Global end   : \033[37m%s (%d bit)\033[90m\n", this->rangeEnd.GetBase16().c_str(), this->rangeEnd.GetBitLength());
+	printf("[+] Global range : \033[37m%s (%d bit)\033[90m\n", this->rangeDiff2.GetBase16().c_str(), this->rangeDiff2.GetBitLength());
 
 }
 
@@ -252,8 +253,9 @@ void KeyHunt::output(std::string addr, std::string pAddr, std::string pAddrHex, 
 	if (!needToClose)
 		printf("\n");
 
+	fprintf(f, "=================================================================================\n");
 	fprintf(f, "PubAddress: %s\n", addr.c_str());
-	fprintf(stdout, "\n=================================================================================\n");
+	fprintf(stdout, "\n[+] =================================================================================\n");
 	fprintf(stdout, "PubAddress: %s\n", addr.c_str());
 
 	if (coinType == COIN_BTC) {
@@ -265,7 +267,7 @@ void KeyHunt::output(std::string addr, std::string pAddr, std::string pAddrHex, 
 	fprintf(stdout, "Priv (HEX): %s\n", pAddrHex.c_str());
 
 	fprintf(f, "=================================================================================\n");
-	fprintf(stdout, "=================================================================================\n");
+	fprintf(stdout, "[+] =================================================================================\n");
 
 	if (needToClose)
 		fclose(f);
@@ -906,7 +908,7 @@ void KeyHunt::FindKeyGPU(TH_PARAM * ph)
 	Int* keys = new Int[nbThread];
 	std::vector<ITEM> found;
 
-	printf("[+] GPU          : %s\n\n", g->deviceName.c_str());
+	printf("[+] GPU          : \033[37m%s\033[90m\n\n", g->deviceName.c_str());
 
 	counters[thId] = 0;
 
@@ -1089,12 +1091,9 @@ void KeyHunt::SetupRanges(uint32_t totalThreads)
 
 
 //для отображения скорости-----------------------------------------------
-std::string formatDouble(const char* formatStr, double value)
-{
+std::string formatDouble(const char* formatStr, double value){
 	char buf[100] = { 0 };
-
 	sprintf(buf, formatStr, value);
-
 	return std::string(buf);
 }
 
@@ -1110,7 +1109,7 @@ std::string formatSpeed(double speed) {
 	if (speed < 0.01) {
 		return "< 0.01 MKey/s";
 	}
-	return formatDouble("[%.3f", speed) + " " + units[unitIndex];
+	return formatDouble("%.3f", speed) + " " + units[unitIndex];
 }
 //---------------------------------------------------------------------
 
@@ -1182,24 +1181,20 @@ void KeyHunt::Search(int nbThread, std::vector<int> gpuId, std::vector<int> grid
 #ifndef WIN64
 	setvbuf(stdout, NULL, _IONBF, 0);
 #endif
+
 	printf("\n");
 
 	uint64_t lastCount = 0;
-	uint64_t gpuCount = 0;
-	uint64_t lastGPUCount = 0;
 
 	// Key rate smoothing filter
 #define FILTER_SIZE 8
 	double lastkeyRate[FILTER_SIZE];
-	double lastGpukeyRate[FILTER_SIZE];
 	uint32_t filterPos = 0;
 
 	double keyRate = 0.0;
-	double gpuKeyRate = 0.0;
 	char timeStr[256];
 
 	memset(lastkeyRate, 0, sizeof(lastkeyRate));
-	memset(lastGpukeyRate, 0, sizeof(lastkeyRate));
 
 	// Wait that all threads have started
 	while (!hasStarted(params)) {
@@ -1223,41 +1218,32 @@ void KeyHunt::Search(int nbThread, std::vector<int> gpuId, std::vector<int> grid
 			delay -= 500;
 		}
 
-		gpuCount = getGPUCount();
-		uint64_t count = getCPUCount() + gpuCount;
+		uint64_t count = getCPUCount() + getGPUCount();
 		ICount.SetInt64(count);
 		int completedBits = ICount.GetBitLength();
 		if (rKey <= 0) {
 			completedPerc = CalcPercantage(ICount, rangeStart, rangeDiff2);
-			//ICount.Mult(&p100);
-			//ICount.Div(&this->rangeDiff2);
-			//completedPerc = std::stoi(ICount.GetBase10());
 		}
 
 		t1 = Timer::get_tick();
 		keyRate = (double)(count - lastCount) / (t1 - t0);
-		gpuKeyRate = (double)(gpuCount - lastGPUCount) / (t1 - t0);
 		lastkeyRate[filterPos % FILTER_SIZE] = keyRate;
-		lastGpukeyRate[filterPos % FILTER_SIZE] = gpuKeyRate;
 		filterPos++;
 
 		// KeyRate smoothing
 		double avgKeyRate = 0.0;
-		double avgGpuKeyRate = 0.0;
 		uint32_t nbSample;
 		for (nbSample = 0; (nbSample < FILTER_SIZE) && (nbSample < filterPos); nbSample++) {
 			avgKeyRate += lastkeyRate[nbSample];
-			avgGpuKeyRate += lastGpukeyRate[nbSample];
 		}
 		avgKeyRate /= (double)(nbSample);
-		avgGpuKeyRate /= (double)(nbSample);
 
 		if (isAlive(params)) {
-			std::string speedStr = formatSpeed(static_cast<double>(avgGpuKeyRate) / 1000000.0);
+			std::string speedStr = formatSpeed(static_cast<double>(avgKeyRate) / 1000000.0);
 	
 			memset(timeStr, '\0', 256);
-			printf("\033[37m");
-			printf("\r[%s] [F: %d] [GPU: %s] [C: %lf %%] [R: %llu] [T: %s (%d bit)]  ",
+			printf("\033[37m"); //белый
+			printf("\r[%s] [F: %d] [SPEED: %s] [C: %lf %%] [R: %llu] [T: %s (%d bit)]  ",
 				toTimeStr(t1, timeStr),
 				nbFoundKey,
 				speedStr.c_str(),
@@ -1276,7 +1262,6 @@ void KeyHunt::Search(int nbThread, std::vector<int> gpuId, std::vector<int> grid
 		}
 
 		lastCount = count;
-		lastGPUCount = gpuCount;
 		t0 = t1;
 		if (should_exit || nbFoundKey >= targetCounter || completedPerc > 100.5)
 			endOfSearch = true;

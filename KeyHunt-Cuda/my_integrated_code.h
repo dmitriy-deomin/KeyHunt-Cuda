@@ -58,23 +58,22 @@ void printHelp() {
 	cout << "\033[37m"; //белый
 	cout << "[+] =====================================================" << endl;
 	cout << "[+] .bat ФАЙЛЫ ДЛЯ ЗАПУСКА И КОНВЕРТИРОВАНИЯ СОЗДАННЫ" << endl;
-	create_bat_Brute("KeyHunt-Cuda.exe -g -t 0 --gpui 0 --coin BTC -m addresses --range 80000000000000000:fffffffffffffffff -i btc.bin -r 10000\npause", "START_BTC.bat");
+	create_bat_Brute("KeyHunt-Cuda.exe -g --gpui 0 --coin BTC -m addresses --range 80000000000000000:fffffffffffffffff -i btc.bin -r 10000\npause", "START_BTC_GPU.bat");
+	create_bat_Brute("KeyHunt-Cuda.exe -t 1 --coin BTC -m addresses --range 80000000000000000:fffffffffffffffff -i btc.bin -r 10000\npause", "START_BTC_CPU.bat");
 	create_bat_Brute("::Укажите вместо eth.txt свой список ETH или TRX адресов\nKeyHunt-Cuda.exe -convertFileETH eth.txt\npause", "CONVERT_TXT_ETH_TO_BIN.bat");
 	create_bat_Brute("::Укажите вместо btc.txt свой список BTC адресов\nKeyHunt-Cuda.exe -convertFileBTC btc.txt\npause", "CONVERT_TXT_BTC_TO_BIN.bat");
 	cout << "[+] =====================================================" << endl << endl;
 
 	cout << "[+] =====================================================" << endl;
-	cout << "[+] Список адресов должен быть cконвертирован          " << endl;
-	cout << "[+] и сохранен в бинарный файл .bin                    " << endl;
-	cout << "[+] конвертировать можно программой через             " << endl;
-	cout << "[+] CONVERT_TXT_TO_BIN.bat                            " << endl;
+	cout << "[+] Список адресов должен быть cконвертирован,отсортирован и сохранен в бинарный файл .bin" << endl;
+	cout << "[+] Конвертировать можно программой через CONVERT_TXT_TO_BIN.bat" << endl;
 	cout << "[+] =====================================================" << endl << endl;
 
 	cout << "[+] =====================================================" << endl;
 	cout << "[+] Список параметров запуска          " << endl;
 	cout << "[+] -h вызов родной справки           " << endl;
 	cout << "[+] -g поиск с помощью видеокарты          " << endl;
-	cout << "[+] --gpui номер видеокарты(обычно 0(--gpui 0)если одна,\n[+] если несколько перечислить через запятую(--gpui 0,1,2)) " << endl;
+	cout << "[+] --gpui номер видеокарты(--gpui 0)если одна,если несколько перечислить через запятую(--gpui 0,1,2)) " << endl;
 	cout << "[+] -m режим поиска по:          " << endl;
 	cout << "[+]    -m ADDRESS одному адрессу            " << endl;
 	cout << "[+]    -m ADDRESSES списку адрессов            " << endl;
@@ -86,9 +85,10 @@ void printHelp() {
 	cout << "[+] -u -поиск только несжатых адрессов          " << endl;
 	cout << "[+] -b -поиск сжатых и несжатых адрессов          " << endl;
 	cout << "[+] -r включение рандомного диапазона из заданого          " << endl;
-	cout << "[+]    -r 1000 (через 1000 милионов смениться)          " << endl;
-	cout << "[+] -t количество потоков цпу          " << endl;
-	cout << "[+] -o файл куда будет сохраняться найденое          " << endl;
+	cout << "[+]    -r 1000 (при запуске будет выбран случайный и через 1000 милионов смениться опять)          " << endl;
+	cout << "[+] -t количество потоков цпу при поиске на процессоре" << endl;
+	cout << "[+] -o файл куда будет сохраняться найденое" << endl;
+	cout << "[+]    (По умолчанию название файла будет сформировано из 5 знаков начала диапазона и конца,вида FOUND[80001_80002].txt )" << endl;
 	cout << "[+] =====================================================" << endl << endl;
 
 	cout << "\033[32m" << endl; //зелёный
