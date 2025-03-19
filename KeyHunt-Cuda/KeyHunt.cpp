@@ -254,9 +254,9 @@ void KeyHunt::output(std::string addr, std::string pAddr, std::string pAddrHex, 
 		printf("\n");
 
 	fprintf(f, "=================================================================================\n");
-	fprintf(f, "PubAddress: %s\n", addr.c_str());
+	fprintf(f, "Address: %s\n", addr.c_str());
 	fprintf(stdout, "\n[+] =================================================================================\n");
-	fprintf(stdout, "PubAddress: %s\n", addr.c_str());
+	fprintf(stdout, "Address: %s\n", addr.c_str());
 
 	if (coinType == COIN_BTC) {
 		fprintf(f, "Priv (WIF): p2pkh:%s\n", pAddr.c_str());
@@ -1210,6 +1210,9 @@ void KeyHunt::Search(int nbThread, std::vector<int> gpuId, std::vector<int> grid
 	p100.SetInt32(100);
 	double completedPerc = 0;
 	uint64_t rKeyCount = 0;
+	std::string speedStr = "";
+	std::string random = " ";
+
 	while (isAlive(params)) {
 
 		int delay = 2000;
@@ -1239,16 +1242,16 @@ void KeyHunt::Search(int nbThread, std::vector<int> gpuId, std::vector<int> grid
 		avgKeyRate /= (double)(nbSample);
 
 		if (isAlive(params)) {
-			std::string speedStr = formatSpeed(static_cast<double>(avgKeyRate) / 1000000.0);
+			speedStr = formatSpeed(static_cast<double>(avgKeyRate) / 1000000.0);
 	
 			memset(timeStr, '\0', 256);
-			printf("\033[37m"); //белый
-			printf("\r[%s] [F: %d] [SPEED: %s] [C: %lf %%] [R: %llu] [T: %s (%d bit)]  ",
+
+			printf("\r\033[96m[+] [%s] [F: %d] [SPEED: %s] [C: %lf %%]%s[T: %s (%d bit)]  ",
 				toTimeStr(t1, timeStr),
 				nbFoundKey,
 				speedStr.c_str(),
 				completedPerc,
-				rKeyCount,
+				random,
 				formatThousands(count).c_str(),
 				completedBits);
 		}
@@ -1259,6 +1262,8 @@ void KeyHunt::Search(int nbThread, std::vector<int> gpuId, std::vector<int> grid
 				lastrKey = count;
 				rKeyCount++;
 			}
+			//если рандом включен будем отображать
+			random = " [R:" + std::to_string(rKeyCount) + "] ";
 		}
 
 		lastCount = count;

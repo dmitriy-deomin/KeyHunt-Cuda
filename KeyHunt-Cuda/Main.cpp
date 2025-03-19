@@ -202,7 +202,7 @@ int main(int argc, char** argv)
 
 	cout << zagolovok << endl;
 	cout << "[+] =====================================================" << endl;
-	cout << "[+] KEYHUNT-CUDA v"<<RELEASE<<"                         17.03.2025" << endl;
+	cout << "[+] KEYHUNT-CUDA v"<<RELEASE<<"                         19.03.2025" << endl;
 	cout << "[+] =====================================================\n" << endl;
 	cout << grey;
 
@@ -864,7 +864,7 @@ int main(int argc, char** argv)
 		else
 			printf("\n");
 	}
-	cout << "[+] SSE          : " << white << (useSSE ? "YES" : "NO") << grey << endl;
+	cout << "[+] SSE          : " <<(useSSE ? "YES" : "NO") << endl;
 	cout << "[+] RKEY         : " << white << rKey<<" Mkeys"<<grey<<endl;
 	cout << "[+] MAX FOUND    : " << white << maxFound << grey << endl;
 	if (coinType == COIN_BTC) {

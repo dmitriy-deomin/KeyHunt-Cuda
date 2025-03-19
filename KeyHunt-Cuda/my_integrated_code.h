@@ -94,11 +94,13 @@ void printHelp() {
 	cout << "\033[32m" << endl; //зелёный
 	cout << "[+] =====================================================" << endl;
 	cout << "[+] Программа взята тут" << endl;
-	cout << "[+] https://github.com/iceland2k14/KeyHunt-Cuda" << endl << endl;
+	cout << "[+]  https://github.com/iceland2k14/KeyHunt-Cuda" << endl << endl;
 	cout << "[+] Мои изменения:" << endl;
 	cout << "[+] -встроил конвертер" << endl;
 	cout << "[+] -изменил вывод" << endl<< endl;
-	cout << "[+] Задонатить на чаёк ) " << endl;
+	cout << "[+] Github:" << endl;
+	cout << "[+]  https://github.com/dmitriy-deomin/KeyHunt-Cuda" << endl<< endl;
+	cout << "[+] Задонатить на доширак ) " << endl;
 	cout << "[+] BTC:bc1qmkd9mxvwqhup3tcs9pwx59lnvd59xptp83c4tt" << endl;
 	cout << "[+] ETH:0x129257C352792F398fdb1Df0A79D4608E0893705" << endl;
 	cout << "[+] TRX:TBuFpK7NirtgvgMwpPLTtR2C3iFkrwfyj8" << endl;
