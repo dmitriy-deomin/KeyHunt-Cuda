@@ -11,6 +11,17 @@
 #define BLOOM_VERSION_MAJOR 2
 #define BLOOM_VERSION_MINOR 1
 
+//цвета---------------------------------------
+const char white[] = "\033[37m";
+const char grey[] = "\033[90m";//серый
+//----------------------------------------
+//
+using std::cout;
+using std::string;
+using std::to_string;
+using std::endl;
+//
+
 Bloom::Bloom(unsigned long long entries, double error) : _ready(0)
 {
     if (entries < 2 || error <= 0 || error >= 1) {
@@ -72,15 +83,12 @@ void Bloom::print()
     if (!_ready) {
         printf("[E] Bloom *** NOT READY ***\n");
     }
-    std::cout << "[+] Bloom Bytes  : " << "\033[37m" << _bytes;
+    cout << "[+] Bloom Bytes  : " << white << _bytes;
     unsigned int KB = _bytes / 1024;
     unsigned int MB = KB / 1024;
-    std::string resultM = std::to_string(MB) + " MB";
-    std::string resultK = std::to_string(KB) + " KB";
-    std::cout<<"(" << (MB>0?resultM:resultK)<<")" << "\033[90m" << std::endl;
-    std::cout << "[+] Bloom hash   : " << "\033[37m";
-    printf("%d", _hashes);
-    printf("\033[90m\n");
+    cout<<"(" << (MB>0?to_string(MB) + " MB":to_string(KB) + " KB")<<")" << grey << endl;
+
+    cout << "[+] Bloom hash   : " << white << (int)_hashes << grey << endl;
 }
 
 
