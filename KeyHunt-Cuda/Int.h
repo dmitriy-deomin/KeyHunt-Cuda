@@ -1,22 +1,3 @@
-/*
- * This file is part of the BSGS distribution (https://github.com/JeanLucPons/Kangaroo).
- * Copyright (c) 2020 Jean Luc PONS.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, version 3.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
-*/
-
-// Big integer class (Fixed size)
-
 #ifndef BIGINTH
 #define BIGINTH
 
@@ -180,14 +161,6 @@ public:
 	static void Check();
 	static bool CheckInv(Int* a);
 
-
-
-	// Align to 16 bytes boundary
-	//union {
-	//	__declspec(align(16)) uint32_t bits[NB32BLOCK];
-	//	__declspec(align(16)) uint64_t bits64[NB64BLOCK];
-	//};
-
 	union {
 		uint32_t bits[NB32BLOCK];
 		uint64_t bits64[NB64BLOCK];
@@ -261,20 +234,6 @@ static uint64_t inline __rdtsc() {
 #include <intrin.h>
 #pragma intrinsic(_BitScanReverse64)
 #pragma intrinsic(_BitScanForward64)
-//#define TZC(x) _tzcnt_u64(x)
-//#define LZC(x) _lzcnt_u64(x)
-
-//static unsigned __int64 TZC(unsigned __int64 x) {
-//	if (x == 0ULL)
-//		return 64;
-//	return _tzcnt_u64(x);
-//}
-//
-//static unsigned __int64 LZC(unsigned __int64 x) {
-//	if (x == 0ULL)
-//		return 64;
-//	return 63ULL - _lzcnt_u64(x);
-//}
 
 static unsigned __int64 TZC(unsigned __int64 x) {
 	if (x == 0ULL)

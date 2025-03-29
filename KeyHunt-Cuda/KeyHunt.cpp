@@ -254,20 +254,21 @@ void KeyHunt::output(std::string addr, std::string pAddr, std::string pAddrHex, 
 		printf("\n");
 
 	fprintf(f, "=================================================================================\n");
-	fprintf(f, "Address: %s\n", addr.c_str());
-	fprintf(stdout, "\n[+] =================================================================================\n");
-	fprintf(stdout, "Address: %s\n", addr.c_str());
+	fprintf(f, "ADDRESS: %s\n", addr.c_str());
+	printf("\n\n[+] =================================================================================\n");
+	printf("[+] FOUND:%d\n",nbFoundKey+1);
+	printf("[+] ADDRESS: %s\n", addr.c_str());
 
 	if (coinType == COIN_BTC) {
-		fprintf(f, "Priv (WIF): p2pkh:%s\n", pAddr.c_str());
-		fprintf(stdout, "Priv (WIF): p2pkh:%s\n", pAddr.c_str());
+		fprintf(f, "WIF: %s\n", pAddr.c_str());
+		printf("[+] WIF: %s\n", pAddr.c_str());
 	}
 
-	fprintf(f, "Priv (HEX): %s\n", pAddrHex.c_str());
-	fprintf(stdout, "Priv (HEX): %s\n", pAddrHex.c_str());
+	fprintf(f, "HEX: %s\n", pAddrHex.c_str());
+	printf("[+] HEX: %s\n", pAddrHex.c_str());
 
 	fprintf(f, "=================================================================================\n");
-	fprintf(stdout, "[+] =================================================================================\n");
+	printf("[+] =================================================================================\n\n");
 
 	if (needToClose)
 		fclose(f);
@@ -908,7 +909,7 @@ void KeyHunt::FindKeyGPU(TH_PARAM * ph)
 	Int* keys = new Int[nbThread];
 	std::vector<ITEM> found;
 
-	printf("[+] GPU          : \033[37m%s\033[90m\n\n", g->deviceName.c_str());
+	printf("\n[+] GPU          : \033[37m%s\033[90m\n", g->deviceName.c_str());
 
 	counters[thId] = 0;
 
@@ -1182,8 +1183,6 @@ void KeyHunt::Search(int nbThread, std::vector<int> gpuId, std::vector<int> grid
 	setvbuf(stdout, NULL, _IONBF, 0);
 #endif
 
-	printf("\n");
-
 	uint64_t lastCount = 0;
 
 	// Key rate smoothing filter
@@ -1212,6 +1211,8 @@ void KeyHunt::Search(int nbThread, std::vector<int> gpuId, std::vector<int> grid
 	uint64_t rKeyCount = 0;
 	std::string speedStr = "";
 	std::string random = " ";
+
+	printf("\n");
 
 	while (isAlive(params)) {
 
@@ -1246,9 +1247,8 @@ void KeyHunt::Search(int nbThread, std::vector<int> gpuId, std::vector<int> grid
 	
 			memset(timeStr, '\0', 256);
 
-			printf("\r\033[96m[+] [%s] [F: %d] [SPEED: %s] [C: %lf %%]%s[T: %s (%d bit)]  ",
+			printf("\r\033[96m[+] [%s] [SPEED: %s] [C: %lf %%]%s[T: %s (%d bit)]  ",
 				toTimeStr(t1, timeStr),
-				nbFoundKey,
 				speedStr.c_str(),
 				completedPerc,
 				random,

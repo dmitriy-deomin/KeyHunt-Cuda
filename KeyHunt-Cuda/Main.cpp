@@ -18,7 +18,7 @@
 //
 
 #define RELEASE "1.07"
-#define DATA_RELIZA "22.03.2025"
+#define DATA_RELIZA "23.03.2025"
 
 bool should_exit = false;
 
