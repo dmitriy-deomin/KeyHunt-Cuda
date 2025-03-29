@@ -35,7 +35,7 @@ CXX        = g++
 CUDA       = /usr/local/cuda-12.0
 CXXCUDA    = /usr/bin/g++
 NVCC ?= nvcc
-nvcc -allow-unsupported-compiler -o obj/GPU/GPUEngine.o -c GPU/GPUEngine.cu
+	nvcc -allow-unsupported-compiler -o obj/GPU/GPUEngine.o -c GPU/GPUEngine.cu
 ccap       = $(shell echo $(CCAP) | tr -d '.')
 
 ifdef gpu
