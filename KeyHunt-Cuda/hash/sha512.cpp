@@ -18,6 +18,8 @@
 #include <string.h>
 #include "sha512.h"
 
+using std::hash;
+
 #define BSWAP
 #define SHA512_BLOCK_SIZE       128
 #define SHA512_HASH_LENGTH      64
