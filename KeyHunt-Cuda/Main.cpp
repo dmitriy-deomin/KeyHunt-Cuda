@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <cassert>
 #include <algorithm>
+#include <cstdint>
 #ifndef WIN64
 #include <signal.h>
 #include <unistd.h>
