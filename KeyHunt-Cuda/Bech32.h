@@ -106,4 +106,6 @@ int bech32_decode_my(
 
 int bech32_decode_nocheck(uint8_t *data, size_t *data_len, const char *input);
 
+int bech32_decode_my(uint8_t* witdata, size_t* witdata_len, const char* input);
+
 #endif
