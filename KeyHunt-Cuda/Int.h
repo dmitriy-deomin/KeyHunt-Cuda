@@ -77,6 +77,7 @@ public:
 
 	double ToDouble();
 
+
 	// Modular arithmetic
 
 	// Setup field

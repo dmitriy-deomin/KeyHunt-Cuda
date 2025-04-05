@@ -9,25 +9,17 @@ C:\Users\PC\Documents\GitHub\KeyHunt-Cuda\KeyHunt-Cuda\GPU\GPUEngine.cu(853): wa
   Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
   
   GPUEngine.cu
-  tmpxft_00002b68_00000000-7_GPUEngine.cudafe1.cpp
+  tmpxft_00001258_00000000-7_GPUEngine.cudafe1.cpp
   device_functions.h is an internal header file and must not be used directly.  This file will be removed in a future CUDA release.  Please use cuda_runtime_api.h or cuda_runtime.h instead.
-C:\Users\PC\Documents\GitHub\KeyHunt-Cuda\KeyHunt-Cuda\GPU\GPUEngine.cu(508): warning C4244: аргумент: преобразование "uint64_t" в "int", возможна потеря данных
-C:\Users\PC\Documents\GitHub\KeyHunt-Cuda\KeyHunt-Cuda\GPU\GPUEngine.cu(512): warning C4244: аргумент: преобразование "uint64_t" в "int", возможна потеря данных
-C:\Users\PC\Documents\GitHub\KeyHunt-Cuda\KeyHunt-Cuda\GPU\GPUEngine.cu(517): warning C4244: аргумент: преобразование "uint64_t" в "int", возможна потеря данных
-C:\Users\PC\Documents\GitHub\KeyHunt-Cuda\KeyHunt-Cuda\GPU\GPUEngine.cu(540): warning C4244: аргумент: преобразование "uint64_t" в "int", возможна потеря данных
 cl : командная строка warning D9002: пропуск неизвестного параметра "/arch:SSE"
   Base58.cpp
   Bech32.cpp
   BinSort.cpp
   Bloom.cpp
-C:\Users\PC\Documents\GitHub\KeyHunt-Cuda\KeyHunt-Cuda\Bloom.cpp(75,21): warning C4244: инициализация: преобразование "unsigned __int64" в "unsigned int", возможна потеря данных
-  CmdParse.cpp
+C:\Users\PC\Documents\GitHub\KeyHunt-Cuda\KeyHunt-Cuda\Bloom.cpp(87,21): warning C4244: инициализация: преобразование "unsigned __int64" в "unsigned int", возможна потеря данных
   GmpUtil.cpp
 C:\Users\PC\Documents\GitHub\KeyHunt-Cuda\KeyHunt-Cuda\GmpUtil.cpp(2,10): fatal error C1083: Не удается открыть файл включение: gmp.h: No such file or directory,
   GPUGenerate.cpp
-  keccak160.cpp
-  ripemd160.cpp
-  ripemd160_sse.cpp
   sha256.cpp
   sha256_sse.cpp
   sha512.cpp
@@ -35,21 +27,14 @@ C:\Users\PC\Documents\GitHub\KeyHunt-Cuda\KeyHunt-Cuda\GmpUtil.cpp(2,10): fatal 
   IntGroup.cpp
   IntMod.cpp
   KeyHunt.cpp
-C:\Users\PC\Documents\GitHub\KeyHunt-Cuda\KeyHunt-Cuda\KeyHunt.cpp(94,12): warning C4477: "printf": в строке форматирования "%d" требуется аргумент типа "int", но вариативный аргумент "1" имеет тип "uint64_t"
-C:\Users\PC\Documents\GitHub\KeyHunt-Cuda\KeyHunt-Cuda\KeyHunt.cpp(94,12): message : рекомендуется использовать "%lld" в строке форматирования
-C:\Users\PC\Documents\GitHub\KeyHunt-Cuda\KeyHunt-Cuda\KeyHunt.cpp(94,12): message : рекомендуется использовать "%Id" в строке форматирования
-C:\Users\PC\Documents\GitHub\KeyHunt-Cuda\KeyHunt-Cuda\KeyHunt.cpp(94,12): message : рекомендуется использовать "%I64d" в строке форматирования
-C:\Users\PC\Documents\GitHub\KeyHunt-Cuda\KeyHunt-Cuda\KeyHunt.cpp(94,12): warning C4477: "printf": в строке форматирования "%d" требуется аргумент типа "int", но вариативный аргумент "2" имеет тип "uint64_t"
-C:\Users\PC\Documents\GitHub\KeyHunt-Cuda\KeyHunt-Cuda\KeyHunt.cpp(94,12): message : рекомендуется использовать "%lld" в строке форматирования
-C:\Users\PC\Documents\GitHub\KeyHunt-Cuda\KeyHunt-Cuda\KeyHunt.cpp(94,12): message : рекомендуется использовать "%Id" в строке форматирования
-C:\Users\PC\Documents\GitHub\KeyHunt-Cuda\KeyHunt-Cuda\KeyHunt.cpp(94,12): message : рекомендуется использовать "%I64d" в строке форматирования
-C:\Users\PC\Documents\GitHub\KeyHunt-Cuda\KeyHunt-Cuda\KeyHunt.cpp(1232,15): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\Users\PC\Documents\GitHub\KeyHunt-Cuda\KeyHunt-Cuda\KeyHunt.cpp(1291,37): warning C4244: =: преобразование "double" в "uint64_t", возможна потеря данных
+C:\Users\PC\Documents\GitHub\KeyHunt-Cuda\KeyHunt-Cuda\KeyHunt.cpp(1314,15): warning C4244: аргумент: преобразование "double" в "int", возможна потеря данных
+C:\Users\PC\Documents\GitHub\KeyHunt-Cuda\KeyHunt-Cuda\KeyHunt.cpp(1313,11): warning C4477: "printf": в строке форматирования "%s" требуется аргумент типа "char *", но вариативный аргумент "3" имеет тип "std::string"
+C:\Users\PC\Documents\GitHub\KeyHunt-Cuda\KeyHunt-Cuda\KeyHunt.cpp(1313,11): warning C4477: "printf": в строке форматирования "%s" требуется аргумент типа "char *", но вариативный аргумент "5" имеет тип "std::string"
   Main.cpp
-C:\Users\PC\Documents\GitHub\KeyHunt-Cuda\KeyHunt-Cuda\my_integrated_code.h(130,30): warning C4244: =: преобразование "unsigned long" в "char", возможна потеря данных
+C:\Users\PC\Documents\GitHub\KeyHunt-Cuda\KeyHunt-Cuda\my_integrated_code.h(144,30): warning C4244: =: преобразование "unsigned long" в "char", возможна потеря данных
   Point.cpp
   Random.cpp
-  Создание кода...
-  Компиляция...
   SECP256K1.cpp
   Timer.cpp
   Создание кода...

@@ -206,7 +206,6 @@ S2Round(c, d, e, f, g, h, a, b, K[k + 14], w[14]);\
 S2Round(b, c, d, e, f, g, h, a, K[k + 15], w[15]);\
 }
 
-//#define bswap32(v) (((v) >> 24) | (((v) >> 8) & 0xff00) | (((v) << 8) & 0xff0000) | ((v) << 24))
 #define bswap32(v) __byte_perm(v, 0, 0x0123)
 
 // Initialise state
@@ -760,96 +759,108 @@ __device__ __constant__ uint64_t _KECCAKF_RNDC[24] = {
 
 #define ROTL64(a,b) (((a) << (b)) | ((a) >> (64 - b)))
 
-__device__ __noinline__ void _GetHashKeccak160(uint64_t* x, uint64_t* y, uint32_t* hash)
+__device__ __noinline__ void _GetHashKeccak160(const uint64_t* __restrict__ x, const uint64_t* __restrict__ y, uint32_t* __restrict__ hash)
 {
-	_KECCAK_STATE e;
-	uint32_t* X = (uint32_t*)x;
-	uint32_t* Y = (uint32_t*)y;
-	e.q[8] = 0; e.q[9] = 0; 
-	e.q[10] = 0; e.q[11] = 0;
-	e.q[12] = 0; e.q[13] = 0; 
-	e.q[14] = 0; e.q[15] = 0;
-	e.q[16] = 0; e.q[17] = 0; 
-	e.q[18] = 0; e.q[19] = 0;
-	e.q[20] = 0; e.q[21] = 0; 
-	e.q[22] = 0; e.q[23] = 0; 
-	e.q[24] = 0;
-	e.d[0] = bswap32(X[7]);
-	e.d[1] = bswap32(X[6]);
-	e.d[2] = bswap32(X[5]);
-	e.d[3] = bswap32(X[4]);
-	e.d[4] = bswap32(X[3]);
-	e.d[5] = bswap32(X[2]);
-	e.d[6] = bswap32(X[1]);
-	e.d[7] = bswap32(X[0]);
-	e.d[8] = bswap32(Y[7]);
-	e.d[9] = bswap32(Y[6]);
-	e.d[10] = bswap32(Y[5]);
-	e.d[11] = bswap32(Y[4]);
-	e.d[12] = bswap32(Y[3]);
-	e.d[13] = bswap32(Y[2]);
-	e.d[14] = bswap32(Y[1]);
-	e.d[15] = bswap32(Y[0]);
+	_KECCAK_STATE e = { 0 };
+	const uint2* X = (const uint2*)x;
+	const uint2* Y = (const uint2*)y;
 
-	uint64_t* s = e.q; 
-	e.d[16] ^= 0x01; 
+	// Оптимизированная загрузка с байт-свопом
+	e.d[0] = __byte_perm(X[3].y, 0, 0x0123);
+	e.d[1] = __byte_perm(X[3].x, 0, 0x0123);
+	e.d[2] = __byte_perm(X[2].y, 0, 0x0123);
+	e.d[3] = __byte_perm(X[2].x, 0, 0x0123);
+	e.d[4] = __byte_perm(X[1].y, 0, 0x0123);
+	e.d[5] = __byte_perm(X[1].x, 0, 0x0123);
+	e.d[6] = __byte_perm(X[0].y, 0, 0x0123);
+	e.d[7] = __byte_perm(X[0].x, 0, 0x0123);
+	e.d[8] = __byte_perm(Y[3].y, 0, 0x0123);
+	e.d[9] = __byte_perm(Y[3].x, 0, 0x0123);
+	e.d[10] = __byte_perm(Y[2].y, 0, 0x0123);
+	e.d[11] = __byte_perm(Y[2].x, 0, 0x0123);
+	e.d[12] = __byte_perm(Y[1].y, 0, 0x0123);
+	e.d[13] = __byte_perm(Y[1].x, 0, 0x0123);
+	e.d[14] = __byte_perm(Y[0].y, 0, 0x0123);
+	e.d[15] = __byte_perm(Y[0].x, 0, 0x0123);
+
+	uint64_t* s = e.q;
+	e.d[16] ^= 0x01;
 	e.d[33] ^= 0x80000000;
-	int i;
-	uint64_t v, w, t[5], u[5];
-	for (i = 0; i < 24; i++) {
-		/* theta: c = a[0,i] ^ a[1,i] ^ .. a[4,i] */
-		t[0] = s[0] ^ s[5] ^ s[10] ^ s[15] ^ s[20];
-		t[1] = s[1] ^ s[6] ^ s[11] ^ s[16] ^ s[21];
-		t[2] = s[2] ^ s[7] ^ s[12] ^ s[17] ^ s[22];
-		t[3] = s[3] ^ s[8] ^ s[13] ^ s[18] ^ s[23];
-		t[4] = s[4] ^ s[9] ^ s[14] ^ s[19] ^ s[24];
-		/* theta: d[i] = c[i+4] ^ ROTL64(c[i+1],1) */
-		u[0] = t[4] ^ ROTL64(t[1], 1);
-		u[1] = t[0] ^ ROTL64(t[2], 1);
-		u[2] = t[1] ^ ROTL64(t[3], 1);
-		u[3] = t[2] ^ ROTL64(t[4], 1);
-		u[4] = t[3] ^ ROTL64(t[0], 1);
-		/* theta: a[0,i], a[1,i], .. a[4,i] ^= d[i] */
-		s[0] ^= u[0]; s[5] ^= u[0]; s[10] ^= u[0]; s[15] ^= u[0]; s[20] ^= u[0];
-		s[1] ^= u[1]; s[6] ^= u[1]; s[11] ^= u[1]; s[16] ^= u[1]; s[21] ^= u[1];
-		s[2] ^= u[2]; s[7] ^= u[2]; s[12] ^= u[2]; s[17] ^= u[2]; s[22] ^= u[2];
-		s[3] ^= u[3]; s[8] ^= u[3]; s[13] ^= u[3]; s[18] ^= u[3]; s[23] ^= u[3];
-		s[4] ^= u[4]; s[9] ^= u[4]; s[14] ^= u[4]; s[19] ^= u[4]; s[24] ^= u[4];
-		/* rho pi: b[..] = ROTL64(a[..], ..) */
-		v = s[1];
-		s[1] = ROTL64(s[6], 44);
-		s[6] = ROTL64(s[9], 20);
-		s[9] = ROTL64(s[22], 61);
-		s[22] = ROTL64(s[14], 39);
-		s[14] = ROTL64(s[20], 18);
-		s[20] = ROTL64(s[2], 62);
-		s[2] = ROTL64(s[12], 43);
-		s[12] = ROTL64(s[13], 25);
-		s[13] = ROTL64(s[19], 8);
-		s[19] = ROTL64(s[23], 56);
-		s[23] = ROTL64(s[15], 41);
-		s[15] = ROTL64(s[4], 27);
-		s[4] = ROTL64(s[24], 14);
-		s[24] = ROTL64(s[21], 2);
-		s[21] = ROTL64(s[8], 55);
-		s[8] = ROTL64(s[16], 45);
-		s[16] = ROTL64(s[5], 36);
-		s[5] = ROTL64(s[3], 28);
-		s[3] = ROTL64(s[18], 21);
-		s[18] = ROTL64(s[17], 15);
-		s[17] = ROTL64(s[11], 10);
-		s[11] = ROTL64(s[7], 6);
-		s[7] = ROTL64(s[10], 3);
-		s[10] = ROTL64(v, 1);
-		/* chi: a[i,j] ^= ~b[i,j+1] & b[i,j+2] */
-		v = s[0]; w = s[1]; s[0] ^= (~w) & s[2]; s[1] ^= (~s[2]) & s[3]; s[2] ^= (~s[3]) & s[4]; s[3] ^= (~s[4]) & v; s[4] ^= (~v) & w;
-		v = s[5]; w = s[6]; s[5] ^= (~w) & s[7]; s[6] ^= (~s[7]) & s[8]; s[7] ^= (~s[8]) & s[9]; s[8] ^= (~s[9]) & v; s[9] ^= (~v) & w;
-		v = s[10]; w = s[11]; s[10] ^= (~w) & s[12]; s[11] ^= (~s[12]) & s[13]; s[12] ^= (~s[13]) & s[14]; s[13] ^= (~s[14]) & v; s[14] ^= (~v) & w;
-		v = s[15]; w = s[16]; s[15] ^= (~w) & s[17]; s[16] ^= (~s[17]) & s[18]; s[17] ^= (~s[18]) & s[19]; s[18] ^= (~s[19]) & v; s[19] ^= (~v) & w;
-		v = s[20]; w = s[21]; s[20] ^= (~w) & s[22]; s[21] ^= (~s[22]) & s[23]; s[22] ^= (~s[23]) & s[24]; s[23] ^= (~s[24]) & v; s[24] ^= (~v) & w;
-		/* iota: a[0,0] ^= round constant */
-		s[0] ^= _KECCAKF_RNDC[i];
+
+	// Инициализация локальных переменных
+	uint64_t s0 = s[0], s1 = s[1], s2 = s[2], s3 = s[3], s4 = s[4];
+	uint64_t s5 = s[5], s6 = s[6], s7 = s[7], s8 = s[8], s9 = s[9];
+	uint64_t s10 = s[10], s11 = s[11], s12 = s[12], s13 = s[13], s14 = s[14];
+	uint64_t s15 = s[15], s16 = s[16], s17 = s[17], s18 = s[18], s19 = s[19];
+	uint64_t s20 = s[20], s21 = s[21], s22 = s[22], s23 = s[23], s24 = s[24];
+
+#pragma unroll
+	for (int i = 0; i < 24; i++) {
+		// theta
+		uint64_t t0 = s0 ^ s5 ^ s10 ^ s15 ^ s20;
+		uint64_t t1 = s1 ^ s6 ^ s11 ^ s16 ^ s21;
+		uint64_t t2 = s2 ^ s7 ^ s12 ^ s17 ^ s22;
+		uint64_t t3 = s3 ^ s8 ^ s13 ^ s18 ^ s23;
+		uint64_t t4 = s4 ^ s9 ^ s14 ^ s19 ^ s24;
+
+		uint64_t u0 = t4 ^ ROTL64(t1, 1);
+		uint64_t u1 = t0 ^ ROTL64(t2, 1);
+		uint64_t u2 = t1 ^ ROTL64(t3, 1);
+		uint64_t u3 = t2 ^ ROTL64(t4, 1);
+		uint64_t u4 = t3 ^ ROTL64(t0, 1);
+
+		s0 ^= u0; s5 ^= u0; s10 ^= u0; s15 ^= u0; s20 ^= u0;
+		s1 ^= u1; s6 ^= u1; s11 ^= u1; s16 ^= u1; s21 ^= u1;
+		s2 ^= u2; s7 ^= u2; s12 ^= u2; s17 ^= u2; s22 ^= u2;
+		s3 ^= u3; s8 ^= u3; s13 ^= u3; s18 ^= u3; s23 ^= u3;
+		s4 ^= u4; s9 ^= u4; s14 ^= u4; s19 ^= u4; s24 ^= u4;
+
+		// rho pi
+		uint64_t v = s1;
+		uint64_t w;
+		s1 = ROTL64(s6, 44);
+		s6 = ROTL64(s9, 20);
+		s9 = ROTL64(s22, 61);
+		s22 = ROTL64(s14, 39);
+		s14 = ROTL64(s20, 18);
+		s20 = ROTL64(s2, 62);
+		s2 = ROTL64(s12, 43);
+		s12 = ROTL64(s13, 25);
+		s13 = ROTL64(s19, 8);
+		s19 = ROTL64(s23, 56);
+		s23 = ROTL64(s15, 41);
+		s15 = ROTL64(s4, 27);
+		s4 = ROTL64(s24, 14);
+		s24 = ROTL64(s21, 2);
+		s21 = ROTL64(s8, 55);
+		s8 = ROTL64(s16, 45);
+		s16 = ROTL64(s5, 36);
+		s5 = ROTL64(s3, 28);
+		s3 = ROTL64(s18, 21);
+		s18 = ROTL64(s17, 15);
+		s17 = ROTL64(s11, 10);
+		s11 = ROTL64(s7, 6);
+		s7 = ROTL64(s10, 3);
+		s10 = ROTL64(v, 1);
+
+		// chi
+		v = s0; w = s1; s0 ^= (~w) & s2; s1 ^= (~s2) & s3; s2 ^= (~s3) & s4; s3 ^= (~s4) & v; s4 ^= (~v) & w;
+		v = s5; w = s6; s5 ^= (~w) & s7; s6 ^= (~s7) & s8; s7 ^= (~s8) & s9; s8 ^= (~s9) & v; s9 ^= (~v) & w;
+		v = s10; w = s11; s10 ^= (~w) & s12; s11 ^= (~s12) & s13; s12 ^= (~s13) & s14; s13 ^= (~s14) & v; s14 ^= (~v) & w;
+		v = s15; w = s16; s15 ^= (~w) & s17; s16 ^= (~s17) & s18; s17 ^= (~s18) & s19; s18 ^= (~s19) & v; s19 ^= (~v) & w;
+		v = s20; w = s21; s20 ^= (~w) & s22; s21 ^= (~s22) & s23; s22 ^= (~s23) & s24; s23 ^= (~s24) & v; s24 ^= (~v) & w;
+
+		// iota
+		s0 ^= _KECCAKF_RNDC[i];
 	}
+
+	// Сохраняем результаты
+	s[0] = s0; s[1] = s1; s[2] = s2; s[3] = s3; s[4] = s4;
+	s[5] = s5; s[6] = s6; s[7] = s7; s[8] = s8; s[9] = s9;
+	s[10] = s10; s[11] = s11; s[12] = s12; s[13] = s13; s[14] = s14;
+	s[15] = s15; s[16] = s16; s[17] = s17; s[18] = s18; s[19] = s19;
+	s[20] = s20; s[21] = s21; s[22] = s22; s[23] = s23; s[24] = s24;
+
 	hash[0] = e.d[3];
 	hash[1] = e.d[4];
 	hash[2] = e.d[5];

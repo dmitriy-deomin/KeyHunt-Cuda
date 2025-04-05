@@ -11,14 +11,25 @@
 #include <algorithm>
 #include <iostream>
 #include <cassert>
+#include <fstream>  // Для std::ifstream и std::ofstream
+#include <chrono>  // для работы с временем
 #ifndef WIN64
 #include <pthread.h>
 #endif
 
-//using namespace std;
+std::string convertBTC(const char* in,bool);
+std::string convertETH(const char* in,bool);
 
 Point Gn[CPU_GRP_SIZE / 2];
 Point _2Gn;
+
+//для проверки расширения файла
+bool hasExtension(const std::string& filename, const std::string& ext) {
+	if (filename.length() >= ext.length()) {
+		return filename.compare(filename.length() - ext.length(), ext.length(), ext) == 0;
+	}
+	return false;
+}
 
 // ----------------------------------------------------------------------------
 
@@ -31,7 +42,6 @@ KeyHunt::KeyHunt(const std::string& inputFile, int compMode, int searchMode, int
 	this->outputFile = outputFile;
 	this->useSSE = useSSE;
 	this->nbGPUThread = 0;
-	this->inputFile = inputFile;
 	this->maxFound = maxFound;
 	this->rKey = rKey;
 	this->searchMode = searchMode;
@@ -44,6 +54,23 @@ KeyHunt::KeyHunt(const std::string& inputFile, int compMode, int searchMode, int
 
 	secp = new Secp256K1();
 	secp->Init();
+
+	//посмотрим что за файл передали и если .txt ко конвертнём
+	if (hasExtension(inputFile, ".txt")) {
+		std::cout << "\n[+] Файл имеет расширение .txt\n\n";
+		//1 - btc , 2 - eth
+		if (coinType == 1) {
+			this->inputFile=convertBTC(inputFile.c_str(),true);
+		}
+		if (coinType == 2) {
+			this->inputFile=convertETH(inputFile.c_str(),true);
+		}
+
+	}
+	else {
+		this->inputFile = inputFile;
+	}
+	
 
 	// load file
 	FILE* wfd;
@@ -95,7 +122,7 @@ KeyHunt::KeyHunt(const std::string& inputFile, int compMode, int searchMode, int
 				fflush(stdout);
 			}
 		}
-		i++; // Оставляем для контроля цикла, но теперь nr точнее отслеживает успешные записи
+		i++; 
 	}
 
 	fclose(wfd);
@@ -1079,8 +1106,43 @@ void KeyHunt::rKeyRequest(TH_PARAM * p) {
 }
 // ----------------------------------------------------------------------------
 
+//загрузка чекпоинтов
+uint64_t LoadCheckpoint(const std::string& checkpointFile) {
+	std::ifstream file(checkpointFile);
+	uint64_t checkpoint = 0;
+	if (file.is_open()) {
+		file >> checkpoint;
+		file.close();
+	}
+	return checkpoint;
+}
+
+void SaveCheckpoint(const std::string& checkpointFile, uint64_t count) {
+	std::ofstream file(checkpointFile);
+	if (file.is_open()) {
+		file << count;
+		file.close();
+	}
+}
+// Функция для проверки, прошло ли 30 минут с последнего сохранения
+bool ShouldSaveCheckpoint(const std::chrono::steady_clock::time_point& lastSaveTime) {
+	auto now = std::chrono::steady_clock::now();
+	auto elapsed = std::chrono::duration_cast<std::chrono::minutes>(now - lastSaveTime);
+	return (elapsed.count() >= 30);  // 30 минут
+}
+
+
 void KeyHunt::SetupRanges(uint32_t totalThreads)
 {
+	// Загружаем чекпоинт (если есть)
+	uint64_t checkpoint = LoadCheckpoint("checkpoint.txt");
+
+	// Вычисляем, сколько ключей уже перебрано
+	if (checkpoint > 0) {
+		printf("\n[+] [Auto-Save] Checkpoint load at %llu keys.\n", checkpoint);
+		rangeStart.Add(checkpoint);  // Пропускаем уже проверенные ключи
+	}
+
 	Int threads;
 	threads.SetInt32(totalThreads);
 	rangeDiff.Set(&rangeEnd);
@@ -1114,6 +1176,39 @@ std::string formatSpeed(double speed) {
 }
 //---------------------------------------------------------------------
 
+//для отображения сколько времени осталось
+std::string sec_to_data(uint64_t seconds) {
+	if (seconds <= 0) return "";
+
+	if (seconds > 365 * 86400) {
+		return "[> 1 YEAR] ";
+	}
+
+	int days = (int)(seconds / 86400);
+	seconds -= days * 86400;
+	int hours = (int)(seconds / 3600);
+	seconds -= hours * 3600;
+	int minutes = (int)(seconds / 60);
+	seconds -= minutes * 60;
+
+	char buf[128];
+	if (days > 0) {
+		snprintf(buf, sizeof(buf), "[%dD:%02dh:%02dm] ", days, hours, minutes);
+	}
+	else if (hours > 0) {
+		snprintf(buf, sizeof(buf), "[%02dh:%02dm:%02ds] ", hours, minutes, (int)seconds);
+	}
+	else if (minutes > 0) {
+		snprintf(buf, sizeof(buf), "[%02dm:%02ds] ", minutes, (int)seconds);
+	}
+	else {
+		snprintf(buf, sizeof(buf), "[%02ds] ", (int)seconds);
+	}
+	return std::string(buf);
+}
+//------------------------------------------------------------------------------------------
+
+
 void KeyHunt::Search(int nbThread, std::vector<int> gpuId, std::vector<int> gridSize, bool& should_exit)
 {
 
@@ -1124,7 +1219,7 @@ void KeyHunt::Search(int nbThread, std::vector<int> gpuId, std::vector<int> grid
 	nbGPUThread = (useGpu ? (int)gpuId.size() : 0);
 	nbFoundKey = 0;
 
-	// setup ranges
+	// setup ranges , загрузка чекпоинта если есть
 	SetupRanges(nbCPUThread + nbGPUThread);
 
 	memset(counters, 0, sizeof(counters));
@@ -1185,15 +1280,9 @@ void KeyHunt::Search(int nbThread, std::vector<int> gpuId, std::vector<int> grid
 
 	uint64_t lastCount = 0;
 
-	// Key rate smoothing filter
-#define FILTER_SIZE 8
-	double lastkeyRate[FILTER_SIZE];
-	uint32_t filterPos = 0;
-
-	double keyRate = 0.0;
+	uint64_t keys_to_sek = 0;
 	char timeStr[256];
 
-	memset(lastkeyRate, 0, sizeof(lastkeyRate));
 
 	// Wait that all threads have started
 	while (!hasStarted(params)) {
@@ -1203,6 +1292,7 @@ void KeyHunt::Search(int nbThread, std::vector<int> gpuId, std::vector<int> grid
 	// Reset timer
 	Timer::Init();
 	t0 = Timer::get_tick();
+	auto lastSaveTime = std::chrono::steady_clock::now();  // Запоминаем время старта
 	startTime = t0;
 	Int p100;
 	Int ICount;
@@ -1211,9 +1301,12 @@ void KeyHunt::Search(int nbThread, std::vector<int> gpuId, std::vector<int> grid
 	uint64_t rKeyCount = 0;
 	std::string speedStr = "";
 	std::string random = " ";
+	uint64_t ostalos_keys = 0;
+	uint64_t ostalos_sek = 0;
 
 	printf("\n");
 
+	//рабочий цикл
 	while (isAlive(params)) {
 
 		int delay = 2000;
@@ -1224,37 +1317,45 @@ void KeyHunt::Search(int nbThread, std::vector<int> gpuId, std::vector<int> grid
 
 		uint64_t count = getCPUCount() + getGPUCount();
 		ICount.SetInt64(count);
-		int completedBits = ICount.GetBitLength();
-		if (rKey <= 0) {
-			completedPerc = CalcPercantage(ICount, rangeStart, rangeDiff2);
-		}
 
+		//Скороть перебороа в секунду
 		t1 = Timer::get_tick();
-		keyRate = (double)(count - lastCount) / (t1 - t0);
-		lastkeyRate[filterPos % FILTER_SIZE] = keyRate;
-		filterPos++;
+		keys_to_sek = (count - lastCount) / (t1 - t0);
 
-		// KeyRate smoothing
-		double avgKeyRate = 0.0;
-		uint32_t nbSample;
-		for (nbSample = 0; (nbSample < FILTER_SIZE) && (nbSample < filterPos); nbSample++) {
-			avgKeyRate += lastkeyRate[nbSample];
+		if (rKey == 0) {
+          completedPerc = CalcPercantage(ICount, rangeStart, rangeDiff2);
+		  /*
+		   Чтобы подсчитать сколько осталось времени для конца перебора :
+		   нужно сколько осталось ключей разделить на сколько ключей перебирет в секунду
+		  */
+		  std::string total_keys_dla_perebora = rangeDiff2.GetBase10();
+		  //если ключей дохерища 
+		  if (total_keys_dla_perebora.length() > 20) {
+			  ostalos_keys = 18446744073709551615; // установим максимум для uint64_t
+		  }
+		  else {
+			  ostalos_keys = std::stoull(rangeDiff2.GetBase10());
+		  }
+
+		  ostalos_sek = ostalos_keys / ((keys_to_sek > 0) ? keys_to_sek : 1); //если keys_to_sek == 0 все упадёт
 		}
-		avgKeyRate /= (double)(nbSample);
+		
+		
 
 		if (isAlive(params)) {
-			speedStr = formatSpeed(static_cast<double>(avgKeyRate) / 1000000.0);
+			speedStr = formatSpeed(static_cast<double>(keys_to_sek) / 1000000.0);
 	
 			memset(timeStr, '\0', 256);
 
-			printf("\r\033[96m[+] [%s] [SPEED: %s] [C: %lf %%]%s[T: %s (%d bit)]  ",
+			printf("\r\033[96m[+] [%s] [%s] %s[%lf %%]%s[%s]   ",
 				toTimeStr(t1, timeStr),
 				speedStr.c_str(),
+				sec_to_data(ostalos_sek),
 				completedPerc,
 				random,
-				formatThousands(count).c_str(),
-				completedBits);
+				formatThousands(count).c_str());
 		}
+		//если рандом включен будем отображать
 		if (rKey > 0) {
 			if ((count - lastrKey) > (1000000 * rKey)) {
 				// rKey request
@@ -1262,19 +1363,31 @@ void KeyHunt::Search(int nbThread, std::vector<int> gpuId, std::vector<int> grid
 				lastrKey = count;
 				rKeyCount++;
 			}
-			//если рандом включен будем отображать
 			random = " [R:" + std::to_string(rKeyCount) + "] ";
 		}
 
 		lastCount = count;
 		t0 = t1;
-		if (should_exit || nbFoundKey >= targetCounter || completedPerc > 100.5)
-			endOfSearch = true;
+		if (should_exit || nbFoundKey >= targetCounter || completedPerc > 100.5) {
+			//удаляем чекпоинт
+			std::remove("checkpoint.txt");
+            endOfSearch = true;
+		}
+
+		// Проверяем, прошло ли нужное время
+		if (ShouldSaveCheckpoint(lastSaveTime)) {
+			uint64_t currentCount = getCPUCount() + getGPUCount();
+			SaveCheckpoint("checkpoint.txt", currentCount);  // Сохраняем прогресс
+			lastSaveTime = std::chrono::steady_clock::now(); // Сбрасываем таймер
+			printf("\n[+] [Auto-Save] Checkpoint saved at %llu keys.\n", currentCount);
+		}
+	
 	}
 
 	free(params);
 
 	}
+
 
 // ----------------------------------------------------------------------------
 

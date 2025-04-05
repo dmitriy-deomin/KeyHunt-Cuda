@@ -62,23 +62,23 @@ void printHelp() {
 #ifdef _WIN32 //в винде будем создавать батники для запуска
 	cout << grey;
 	cout << "[+] =====================================================" << endl;
-	cout << "[+]" << white << " .bat ФАЙЛЫ ДЛЯ ЗАПУСКА И КОНВЕРТИРОВАНИЯ СОЗДАННЫ" << grey << endl;
-	create_bat_Brute("KeyHunt-Cuda.exe -g --gpui 0 --coin BTC -m addresses --range 80000000000000000:fffffffffffffffff -i btc.bin -r 10000\npause", "START_BTC_GPU.bat");
+	cout << "[+]" << white << " .bat ФАЙЛЫ ДЛЯ ЗАПУСКА СОЗДАННЫ" << grey << endl;
+	create_bat_Brute("KeyHunt-Cuda.exe -g --gpui 0 --coin ETH -m addresses --range 80000000000000000:fffffffffffffffff -i eth.txt -r 10000\npause", "START_ETH_GPU.bat");
+	create_bat_Brute("KeyHunt-Cuda.exe -g --gpui 0 --coin BTC -m addresses --range 80000000000000000:fffffffffffffffff -i btc.txt -r 10000\npause", "START_BTC_GPU.bat");
 	create_bat_Brute("KeyHunt-Cuda.exe -g --gpui 0 --coin BTC -m address --range 80000000000000000:fffffffffffffffff -r 10000 1MVDYgVaSN6iKKEsbzRUAYFrYJadLYZvvZ\npause", "START_BTC_1address_GPU.bat");
 	create_bat_Brute("KeyHunt-Cuda.exe -t 1 --coin BTC -m addresses --range 80000000000000000:fffffffffffffffff -i btc.bin -r 10000\npause", "START_BTC_CPU.bat");
-	create_bat_Brute("::Укажите вместо eth.txt свой список ETH или TRX адресов\nKeyHunt-Cuda.exe -convertFileETH eth.txt\npause", "CONVERT_TXT_ETH_TO_BIN.bat");
-	create_bat_Brute("::Укажите вместо btc.txt свой список BTC адресов\nKeyHunt-Cuda.exe -convertFileBTC btc.txt\npause", "CONVERT_TXT_BTC_TO_BIN.bat");
 	cout << "[+] =====================================================" << endl << endl;
 #endif
 	cout << grey;
 	cout << "[+] =====================================================" << endl;
-	cout << "[+]" << white << " Список адресов должен быть cконвертирован,отсортирован и сохранен в бинарный файл .bin" << grey << endl;
-	cout << "[+]" << white << " Конвертировать можно программой через CONVERT_TXT_TO_BIN.bat" << grey << endl;
+	cout << "[+]" << white << " Список адресов можно передать в текстовом файле" << grey << endl;
+	cout << "[+]" << white << " программа сама сконвертирует в бинарный и сохранит(перезапишет старый) рядом" << grey << endl;
 	cout << "[+] =====================================================" << endl << endl;
 
 	cout << "[+] =====================================================" << endl;
 	cout << "[+]" << white << " Список параметров запуска" << grey << endl;
 	cout << "[+]"<< white <<" -h "<<grey<<"Вызов родной справки"<< endl;
+	cout << "[+]"<< white <<" -i "<<grey<<"База адрессов -i btc.txt/btc.bin"<< endl;
 	cout << "[+]" << white << " -g " << grey << "Поиск с помощью видеокарты" << endl;
 	cout << "[+]" << white << " --gpui " << grey << "Номер видеокарты(--gpui 0)если одна,если несколько перечислить через запятую(--gpui 0,1,2)) " << endl;
 	cout << "[+]" << white << " -m " << grey << "Режим поиска по:          " << endl;
@@ -146,8 +146,7 @@ void readHex(char* buf, const char* txt) {
 }
 
 
-int convertBTC(char *in) {
-
+std::string convertBTC(const char *in, bool run) {
 	cout << "\033[92m"; //ярко-зелёный
 	cout << "[+] ********РЕЖИМ КОНВЕРТАЦИИ BTC********\n";
 	cout << "\033[90m"; //голубой
@@ -277,14 +276,18 @@ int convertBTC(char *in) {
 
 	cout << "\n[+] ГОТОВО:" << outfile << endl;
 
-	// Ожидаем нажатия клавиши Enter, чтобы программа не закрывалась сразу
-	cout << text_close;
-	cout << "окно можно закрыть";
-	cin.get();  // Ждем ввода пользователя
-	return 0;
+
+	if (!run) {
+		// Ожидаем нажатия клавиши Enter, чтобы программа не закрывалась сразу
+		cout << text_close;
+		cout << "окно можно закрыть";
+		cin.get();  // Ждем ввода пользователя
+	}
+
+	return outfile;
 }
 
-int convertETH(char* in) {
+std::string convertETH(const char* in,bool run) {
 
 	cout << zagolovok;
 	cout << "[+] ********РЕЖИМ КОНВЕРТАЦИИ ETH********\n";
@@ -441,9 +444,13 @@ int convertETH(char* in) {
 
 	cout << "\n[+] ГОТОВО:" << outfile << endl;
 
+
+	if (!run) {
 	// Ожидаем нажатия клавиши Enter, чтобы программа не закрывалась сразу
 	cout << text_close;
 	cout << "окно можно закрыть";
 	cin.get();  // Ждем ввода пользователя
-	return 0;
+	}
+
+	return outfile;
 }

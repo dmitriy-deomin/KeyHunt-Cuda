@@ -1,22 +1,8 @@
-/*
- * This file is part of the VanitySearch distribution (https://github.com/JeanLucPons/VanitySearch).
- * Copyright (c) 2019 Jean Luc PONS.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, version 3.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
-*/
-
 #include <device_atomic_functions.h>
 #include <device_functions.h>
+#include <cuda_runtime.h>
+#include <device_launch_parameters.h>
+
 
 __device__ uint64_t* _2Gnx = NULL;
 __device__ uint64_t* _2Gny = NULL;
@@ -26,18 +12,17 @@ __device__ uint64_t* Gy = NULL;
 
 // ---------------------------------------------------------------------------------------
 
-__device__ int Test_Bit_Set_Bit(const uint8_t* buf, uint32_t bit)
+__device__ __forceinline__ int Test_Bit_Set_Bit(const uint8_t* __restrict__ buf, uint32_t bit)
 {
-	uint32_t byte = bit >> 3;
-	uint8_t c = buf[byte];        // expensive memory access
-	uint8_t mask = 1 << (bit % 8);
+	// 1. вычисление позиции байта и бита без деления
+	const uint32_t byte_pos = bit >> 3;          // эквивалент bit / 8
+	const uint8_t bit_mask = 1 << (bit & 0x7);   // эквивалент bit % 8 (быстрее на gpu)
 
-	if (c & mask) {
-		return 1;
-	}
-	else {
-		return 0;
-	}
+	// 2. чтение байта через указатель с ограничением (__restrict__)
+	const uint8_t byte_val = buf[byte_pos];
+
+	// 3. быстрая проверка бита без ветвления (cmov в ptx)
+	return (byte_val & bit_mask) ? 1 : 0;
 }
 
 // ---------------------------------------------------------------------------------------
@@ -78,26 +63,23 @@ __device__ uint32_t MurMurHash2(const void* key, int len, uint32_t seed)
 
 // ---------------------------------------------------------------------------------------
 
-__device__ int BloomCheck(const uint32_t* hash, const uint8_t* inputBloomLookUp, uint64_t BLOOM_BITS, uint8_t BLOOM_HASHES, uint32_t K_LENGTH)
+__device__ __forceinline__ int BloomCheck(const uint32_t* hash, const uint8_t* inputBloomLookUp, uint64_t BLOOM_BITS, uint8_t BLOOM_HASHES, uint32_t K_LENGTH)
 {
-	uint8_t hits = 0;
-	uint32_t a = MurMurHash2((uint8_t*)hash, K_LENGTH, 0x9747b28c);
-	uint32_t b = MurMurHash2((uint8_t*)hash, K_LENGTH, a);
-	uint32_t x;
-	uint8_t i;
-	for (i = 0; i < BLOOM_HASHES; i++) {
-		x = (a + b * i) % BLOOM_BITS;
-		if (Test_Bit_Set_Bit(inputBloomLookUp, x)) {
-			hits++;
-		}
-		else {
-			return 0;
+	// 1. Предварительный расчет хэшей
+	uint32_t a = MurMurHash2((const uint8_t*)hash, K_LENGTH, 0x9747b28c);
+	uint32_t b = MurMurHash2((const uint8_t*)hash, K_LENGTH, a);
+
+	// 2. Оптимизация цикла проверки битов
+#pragma unroll
+	for (uint8_t i = 0; i < BLOOM_HASHES; ++i) {
+		uint32_t x = (a + b * i) % BLOOM_BITS;
+
+		// 3. Быстрая проверка бита без ветвления
+		if (!Test_Bit_Set_Bit(inputBloomLookUp, x)) {
+			return 0; // Ранний выход при первом несовпадении
 		}
 	}
-	if (hits == BLOOM_HASHES) {
-		return 1;
-	}
-	return 0;
+	return 1; // Все биты установлены
 }
 
 // ---------------------------------------------------------------------------------------
@@ -165,10 +147,6 @@ __device__ __noinline__ bool MatchHash(uint32_t* _h, uint32_t* hash)
 
 __device__ __noinline__ bool MatchXPoint(uint32_t* _h, uint32_t* xpoint)
 {
-	//for (int i = 0; i < 32; i++) {
-	//	printf("%02x", ((uint8_t*)xpoint)[i]);
-	//}
-	//printf("\n");
 
 	if (_h[0] == xpoint[0] &&
 		_h[1] == xpoint[1] &&
