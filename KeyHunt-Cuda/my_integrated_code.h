@@ -63,10 +63,10 @@ void printHelp() {
 	cout << grey;
 	cout << "[+] =====================================================" << endl;
 	cout << "[+]" << white << " .bat ФАЙЛЫ ДЛЯ ЗАПУСКА СОЗДАННЫ" << grey << endl;
-	create_bat_Brute("KeyHunt-Cuda.exe -g --gpui 0 --coin ETH -m addresses --range 80000000000000000:fffffffffffffffff -i eth.txt -r 10000\npause", "START_ETH_GPU.bat");
-	create_bat_Brute("KeyHunt-Cuda.exe -g --gpui 0 --coin BTC -m addresses --range 80000000000000000:fffffffffffffffff -i btc.txt -r 10000\npause", "START_BTC_GPU.bat");
-	create_bat_Brute("KeyHunt-Cuda.exe -g --gpui 0 --coin BTC -m address --range 80000000000000000:fffffffffffffffff -r 10000 1MVDYgVaSN6iKKEsbzRUAYFrYJadLYZvvZ\npause", "START_BTC_1address_GPU.bat");
-	create_bat_Brute("KeyHunt-Cuda.exe -t 1 --coin BTC -m addresses --range 80000000000000000:fffffffffffffffff -i btc.bin -r 10000\npause", "START_BTC_CPU.bat");
+	create_bat_Brute("KeyHunt-Cuda.exe -g --gpui 0 --coin ETH -m addresses --range 100000000000000000:1fff00000000000000 -i eth.txt -r 10000\npause", "START_ETH_GPU.bat");
+	create_bat_Brute("KeyHunt-Cuda.exe -g --gpui 0 --coin BTC -m addresses --range 100000000000000000:1fff00000000000000 -i btc.txt -r 10000\npause", "START_BTC_GPU.bat");
+	create_bat_Brute("KeyHunt-Cuda.exe -g --gpui 0 --coin BTC -m address --range 100000000000000000:1fff00000000000000 -r 10000 19vkiEajfhuZ8bs8Zu2jgmC6oqZbWqhxhG\npause", "START_BTC_1address(69pazl)_GPU.bat");
+	create_bat_Brute("KeyHunt-Cuda.exe -t 1 --coin BTC -m addresses --range 100000000000000000:1fff00000000000000 -i btc.bin -r 10000\npause", "START_BTC_CPU.bat");
 	cout << "[+] =====================================================" << endl << endl;
 #endif
 	cout << grey;
@@ -191,7 +191,7 @@ std::string convertBTC(const char *in, bool run) {
 	// Открытие выходного файла в бинарном режиме
 	FILE* file = fopen(convfile, "wb");
 	if (!file) {
-		std::perror("Ошибка при открытии выходного файла");
+		std::perror("[E] Ошибка при открытии выходного файла");
 		return false;
 	}
 
@@ -206,7 +206,7 @@ std::string convertBTC(const char *in, bool run) {
 	stream.clear(); // сбрасываем состояние потока
 	stream.seekg(0); // возвращаемся в начало файла
 
-	cout << "\nКОНВЕРТИРОВАНИЕ\n" << endl;
+	cout << "\n[+] КОНВЕРТИРОВАНИЕ\n" << endl;
 
 	try {
 		while (std::getline(stream, buffer)) {
@@ -236,7 +236,7 @@ std::string convertBTC(const char *in, bool run) {
 
 			// Запись хэша в файл (в бинарном режиме)
 			if (fwrite(h.bits20, 1, 20, file) != 20) {
-				std::cerr << "Ошибка записи в файл на строке: " << nr + 1 << endl;
+				std::cerr << "[E] Ошибка записи в файл на строке: " << nr + 1 << endl;
 				fclose(file);
 				return false;
 			}
@@ -246,13 +246,13 @@ std::string convertBTC(const char *in, bool run) {
 
 			// Вывод обновляемого прогресса каждые 100000 строк
 			if (nr % 1000000 == 0 || nr == totalLines) {
-				cout << "\rПрогресс: " << nr << "/" << totalLines;
+				cout << "\r[+] " << nr << "/" << totalLines;
 				cout.flush();  // обновляем строку без новой строки
 			}
 		}
 	}
 	catch (...) {
-		std::cerr << "Произошла ошибка при обработке файла." << endl;
+		std::cerr << "[E] Произошла ошибка при обработке файла." << endl;
 		fclose(file);
 		return false;
 	}

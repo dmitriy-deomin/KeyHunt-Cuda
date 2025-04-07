@@ -1325,7 +1325,7 @@ void KeyHunt::Search(int nbThread, std::vector<int> gpuId, std::vector<int> grid
 		if (rKey == 0) {
           completedPerc = CalcPercantage(ICount, rangeStart, rangeDiff2);
 		  /*
-		   „тобы подсчитать сколько осталось времени дл€ конца перебора :
+		   „тобы подсчитать сколько осталось секунд дл€ конца перебора :
 		   нужно сколько осталось ключей разделить на сколько ключей перебирет в секунду
 		  */
 		  std::string total_keys_dla_perebora = rangeDiff2.GetBase10();
@@ -1379,7 +1379,7 @@ void KeyHunt::Search(int nbThread, std::vector<int> gpuId, std::vector<int> grid
 			uint64_t currentCount = getCPUCount() + getGPUCount();
 			SaveCheckpoint("checkpoint.txt", currentCount);  // —охран€ем прогресс
 			lastSaveTime = std::chrono::steady_clock::now(); // —брасываем таймер
-			printf("\n[+] [Auto-Save] Checkpoint saved at %llu keys.\n", currentCount);
+			//printf("\n[+] [Auto-Save] Checkpoint saved at %llu keys.\n", currentCount);
 		}
 	
 	}

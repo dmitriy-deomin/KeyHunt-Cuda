@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>-g --gpui 0 --coin BTC -m address --range 80000000000000000:fffffffffffffffff -r 10000 1MVDYgVaSN6iKKEsbzRUAYFrYJadLYZvvZ</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-g --gpui 0 --coin BTC -m address --range 100000000000000000:1fff00000000000000 -r 10000 19vkiEajfhuZ8bs8Zu2jgmC6oqZbWqhxhG</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>
