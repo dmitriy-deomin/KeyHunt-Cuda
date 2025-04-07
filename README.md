@@ -8,13 +8,13 @@ Renamed from VanitySearch to KeyHunt (inspired from [keyhunt](https://github.com
 A lot of gratitude to all the developers whose codes has been used here.
 
 ## 07.04.2025
- -На вход можно подавать базу в тесктовом формате (-i btc.txt)
- -Каждые 30 минут происходит автосохранение , после завершения перебора удаляеться
- -ПРИ ЗАПУСКЕ ПРОГРАММЫ СЧИТЫВАЕТЬСЯ ФАЙЛ checkpoint.txt , И НАЧИНАЕТЬСЯ ПЕРЕБОР С СОХРАНЕНОГО ЗНАЧЕНИЯ
+-На вход можно подавать базу в тесктовом формате (-i btc.txt)
+-Каждые 30 минут происходит автосохранение , после завершения перебора удаляеться
+-ПРИ ЗАПУСКЕ ПРОГРАММЫ СЧИТЫВАЕТЬСЯ ФАЙЛ checkpoint.txt , И НАЧИНАЕТЬСЯ ПЕРЕБОР С СОХРАНЕНОГО ЗНАЧЕНИЯ
 
- -The database can be submitted to the input in the test format (-i btc.txt )
- -Auto-save occurs every 30 minutes , and it is deleted after the search is completed .
- -WHEN THE PROGRAM STARTS, THE FILE IS READ checkpoint.txt , AND THE ITERATION BEGINS WITH THE SAVED VALUE
+-The database can be submitted to the input in the test format (-i btc.txt )
+-Auto-save occurs every 30 minutes , and it is deleted after the search is completed .
+-WHEN THE PROGRAM STARTS, THE FILE IS READ checkpoint.txt , AND THE ITERATION BEGINS WITH THE SAVED VALUE
 
 
 ## 15.03.2025 Изменения(Changes)
