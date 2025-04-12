@@ -11,6 +11,9 @@
 #include <algorithm>
 #include <iostream>
 #include <cassert>
+#include <string>
+#include <sstream>
+#include <iomanip>
 #include <fstream>  // Для std::ifstream и std::ofstream
 #include <chrono>  // для работы с временем
 #ifndef WIN64
@@ -31,6 +34,40 @@ bool hasExtension(const std::string& filename, const std::string& ext) {
 	return false;
 }
 
+//загрузка чекпоинтов
+uint64_t LoadCheckpoint(const std::string& checkpointFile) {
+	std::ifstream file(checkpointFile);
+	uint64_t checkpoint = 0;
+	if (file.is_open()) {
+		file >> checkpoint;
+		file.close();
+	}
+	return checkpoint;
+}
+
+void SaveCheckpoint(const std::string& checkpointFile, uint64_t count) {
+	std::ofstream file(checkpointFile);
+	if (file.is_open()) {
+		file << count;
+		file.close();
+	}
+}
+// Функция для проверки, прошло ли 30 минут с последнего сохранения
+bool ShouldSaveCheckpoint(const std::chrono::steady_clock::time_point& lastSaveTime) {
+	auto now = std::chrono::steady_clock::now();
+	auto elapsed = std::chrono::duration_cast<std::chrono::minutes>(now - lastSaveTime);
+	return (elapsed.count() >= 30);  // 30 минут
+}
+
+//переводим число в строку
+const char* dec_to_hex(uint64_t value) {
+	static std::string hexStr;
+	std::stringstream ss;
+	ss << std::hex << std::uppercase << value;  // HEX без 0x
+	hexStr = ss.str();
+	return hexStr.c_str();
+}
+
 // ----------------------------------------------------------------------------
 
 KeyHunt::KeyHunt(const std::string& inputFile, int compMode, int searchMode, int coinType, bool useGpu,
@@ -46,7 +83,19 @@ KeyHunt::KeyHunt(const std::string& inputFile, int compMode, int searchMode, int
 	this->rKey = rKey;
 	this->searchMode = searchMode;
 	this->coinType = coinType;
-	this->rangeStart.SetBase16(rangeStart.c_str());
+
+	// Загружаем чекпоинт (если есть)
+	uint64_t checkpoint = LoadCheckpoint("checkpoint.txt");
+
+	// Вычисляем, сколько ключей уже перебрано
+	if (checkpoint > 0) {
+		printf("\n[+] [Auto-Save] Checkpoint load at %llu keys.\n", checkpoint);
+		this->rangeStart.SetBase16(dec_to_hex(checkpoint));
+	}
+	else {
+		this->rangeStart.SetBase16(rangeStart.c_str());
+	}
+
 	this->rangeEnd.SetBase16(rangeEnd.c_str());
 	this->rangeDiff2.Set(&this->rangeEnd);
 	this->rangeDiff2.Sub(&this->rangeStart);
@@ -175,7 +224,18 @@ KeyHunt::KeyHunt(const std::vector<unsigned char>& hashORxpoint, int compMode, i
 	this->rKey = rKey;
 	this->searchMode = searchMode;
 	this->coinType = coinType;
-	this->rangeStart.SetBase16(rangeStart.c_str());
+
+	// Загружаем чекпоинт (если есть)
+	uint64_t checkpoint = LoadCheckpoint("checkpoint.txt");
+
+	// Вычисляем, сколько ключей уже перебрано
+	if (checkpoint > 0) {
+		printf("\n[+] [Auto-Save] Checkpoint load at %llu keys.\n", checkpoint);
+		this->rangeStart.SetBase16(dec_to_hex(checkpoint));
+	}
+	else {
+		this->rangeStart.SetBase16(rangeStart.c_str());
+	}
 	this->rangeEnd.SetBase16(rangeEnd.c_str());
 	this->rangeDiff2.Set(&this->rangeEnd);
 	this->rangeDiff2.Sub(&this->rangeStart);
@@ -1106,43 +1166,8 @@ void KeyHunt::rKeyRequest(TH_PARAM * p) {
 }
 // ----------------------------------------------------------------------------
 
-//загрузка чекпоинтов
-uint64_t LoadCheckpoint(const std::string& checkpointFile) {
-	std::ifstream file(checkpointFile);
-	uint64_t checkpoint = 0;
-	if (file.is_open()) {
-		file >> checkpoint;
-		file.close();
-	}
-	return checkpoint;
-}
-
-void SaveCheckpoint(const std::string& checkpointFile, uint64_t count) {
-	std::ofstream file(checkpointFile);
-	if (file.is_open()) {
-		file << count;
-		file.close();
-	}
-}
-// Функция для проверки, прошло ли 30 минут с последнего сохранения
-bool ShouldSaveCheckpoint(const std::chrono::steady_clock::time_point& lastSaveTime) {
-	auto now = std::chrono::steady_clock::now();
-	auto elapsed = std::chrono::duration_cast<std::chrono::minutes>(now - lastSaveTime);
-	return (elapsed.count() >= 30);  // 30 минут
-}
-
-
 void KeyHunt::SetupRanges(uint32_t totalThreads)
 {
-	// Загружаем чекпоинт (если есть)
-	uint64_t checkpoint = LoadCheckpoint("checkpoint.txt");
-
-	// Вычисляем, сколько ключей уже перебрано
-	if (checkpoint > 0) {
-		printf("\n[+] [Auto-Save] Checkpoint load at %llu keys.\n", checkpoint);
-		rangeStart.Add(checkpoint);  // Пропускаем уже проверенные ключи
-	}
-
 	Int threads;
 	threads.SetInt32(totalThreads);
 	rangeDiff.Set(&rangeEnd);

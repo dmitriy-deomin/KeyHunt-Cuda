@@ -102,12 +102,9 @@ void printHelp() {
 
 	
 	cout << "[+] =====================================================" << endl;
-	cout << "[+]"<<green<<" Программа взята тут" << grey << endl;
+	cout << "[+]" <<green << " Программа взята тут Github:" << grey << endl;
 	cout << "[+]" << bluu << "  https://github.com/iceland2k14/KeyHunt-Cuda" << grey << endl;
-	cout << "[+]" << green << " Мои изменения:" << grey<<endl;
-	cout << "[+]" << green << " -встроил конвертер" << grey << endl;
-	cout << "[+]" << green << " -изменил вывод" << grey << endl;
-	cout << "[+]" << green << " Github:" << grey << endl;
+	cout << "[+]" << green << " Этот мод Github:" << grey << endl;
 	cout << "[+]" << bluu << "  https://github.com/dmitriy-deomin/KeyHunt-Cuda" << grey << endl;
 	cout << "[+]" << green << " Задонатить на доширак ) " << grey << endl;
 	cout << "[+]" << green << " BTC:bc1qmkd9mxvwqhup3tcs9pwx59lnvd59xptp83c4tt" << grey << endl;
